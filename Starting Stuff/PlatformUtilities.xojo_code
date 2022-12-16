@@ -160,7 +160,7 @@ Protected Module PlatformUtilities
 		    
 		    Soft Declare Function SetThreadExecutionState Lib "Kernel32.dll" ( new_state As UInt32 ) As UInt32
 		    
-		    m_Windows_previous_thread_state = SetThreadExecutionState( m_previous_state )
+		    m_Windows_previous_thread_state = SetThreadExecutionState( m_Windows_previous_thread_state )
 		    m_Windows_previous_thread_state = 0
 		  #EndIf
 		End Sub
