@@ -190,16 +190,27 @@ Protected Module PlatformUtilities
 		    Dim rvalue As OSVersionInfo = operatingSystemVersion( myInfo )
 		    
 		    m_MajorVersion = rValue.major
-		    m_MinorVersion = rvalue.major
+		    m_MinorVersion = rvalue.minor
 		    m_Bug = rvalue.bug
 		    
-		    Dim s As New shell
-		    s.execute("`which sysctl` kern.osversion")
-		    Dim tmp As String = s.result
+		    // Dim s As New shell
+		    // s.execute("`which sysctl` kern.osversion")
+		    // Dim tmp As String = s.result
+		    // 
+		    // If tmp.BeginsWith("kern.osversion:") Then
+		    // m_build = Trim( tmp.ReplaceAll("kern.osversion:", "" ) )
+		    // End If
 		    
-		    If tmp.BeginsWith("kern.osversion:") Then
-		      m_build = Trim( tmp.ReplaceAll("kern.osversion:", "" ) )
+		    Declare Function sysctlbyname Lib "/usr/lib/libSystem.dylib" (name As cString, out As ptr, ByRef size As UInteger, newP As ptr, newPSize As UInteger) As Integer
+		    
+		    Dim size As UInteger = 128
+		    Dim mb As New memoryblock(size)
+		    
+		    If sysctlbyname( "kern.osversion", mb, size, Nil, 0 ) <> 0 Then
+		      Return 
 		    End If
+		    
+		    m_build = Trim(mb.CString(0))
 		    
 		  #ElseIf TargetWindows
 		    
@@ -582,6 +593,17 @@ Protected Module PlatformUtilities
 		  
 		  
 		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub RunUnitTests()
+		  #If debugbuild 
+		    
+		    Initialize
+		    
+		    
+		  #EndIf
+		End Sub
 	#tag EndMethod
 
 

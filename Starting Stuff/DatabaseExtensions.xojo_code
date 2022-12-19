@@ -3,7 +3,22 @@ Protected Module DatabaseExtensions
 	#tag Method, Flags = &h0
 		Function UTF8StringValue(extends dbField as DatabaseField) As String
 		  
-		  Return DefineEncoding( dbField.StringValue, Encodings.UTF8 )
+		  // suggested by Christian Schmitz
+		  
+		  Dim s As String = dbField.StringValue
+		  
+		  If s.Encoding = Nil Then
+		    If encodings.UTF8.IsValidData(s) Then
+		      // mark as UTF-8
+		      Return DefineEncoding( s, Encodings.UTF8 )
+		    Else
+		      // use a fallback encoding
+		      Return DefineEncoding( s, encodings.ISOLatin1)
+		    End If
+		  Else
+		    // make sure, we have UTF-8 and not UTF-16 or Windows encoding
+		    Return ConvertEncoding(s, encodings.UTF8)
+		  End If
 		  
 		End Function
 	#tag EndMethod

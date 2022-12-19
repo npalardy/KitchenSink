@@ -23,7 +23,7 @@ Inherits Application
 		  TextOutputStreamExtensions.RunUnitTests
 		  FolderitemExtensions.RunUnitTests
 		  Security.RunUnitTests
-		  
+		  PlatformUtilities.RunUnitTests
 		  
 		  
 		  #If targetMacOS Then
