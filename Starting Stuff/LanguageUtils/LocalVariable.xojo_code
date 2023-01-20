@@ -118,14 +118,6 @@ Protected Class LocalVariable
 			Type="string"
 			EditorType="MultiLineEditor"
 		#tag EndViewProperty
-		#tag ViewProperty
-			Name="requiresNew"
-			Visible=false
-			Group="Behavior"
-			InitialValue=""
-			Type="boolean"
-			EditorType=""
-		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
 #tag EndClass

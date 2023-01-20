@@ -48,6 +48,25 @@ Protected Module WindowsOS
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Function LocalData() As FolderItem
+		  #If TargetWindows
+		    Const CSIDL_LOCAL_APPDATA = &h1c
+		    
+		    Declare Function SHGetSpecialFolderPathA Lib "Shell32" (hwnd As Integer, pszPath As Ptr, csidl As Integer, fCreate As Boolean) As Boolean
+		    
+		    Var oSpace As New MemoryBlock(1024)
+		    Var pSpacePtr As Ptr = oSpace
+		    
+		    If SHGetSpecialFolderPathA(0, pSpacePtr, CSIDL_LOCAL_APPDATA, False) Then
+		      Var sPath As String
+		      sPath = oSpace.CString(0)
+		      Return New FolderItem(sPath, FolderItem.PathModes.Native)
+		    End If
+		  #EndIf
+		End Function
+	#tag EndMethod
+
 
 	#tag ViewBehavior
 		#tag ViewProperty

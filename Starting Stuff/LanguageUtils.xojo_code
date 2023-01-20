@@ -1,14 +1,6 @@
 #tag Module
 Protected Module LanguageUtils
 	#tag CompatibilityFlags = TargetHasGUI
-	#tag Method, Flags = &h1
-		Protected Function ArrayKeywords() As String()
-		  Return Array("append", "remove", "indexof", "insert", "shuffle", "sort", "sortwith" )
-		  
-		  
-		End Function
-	#tag EndMethod
-
 	#tag Method, Flags = &h21
 		Private Sub assert(test as boolean, msg as string)
 		  If test = False Then
@@ -23,7 +15,7 @@ Protected Module LanguageUtils
 		  // Find the source that closes the given opening.
 		  
 		  Dim aboveWord As String
-		  dim tokens() as string = TokenizeLine(openingSrc, false)
+		  dim tokens() as string = TokenizeLine(openingSrc, LanguageUtils.NoWhiteSpaceFlag)
 		  If tokens.ubound < 0 Then
 		    Return ""
 		  End If
@@ -178,7 +170,7 @@ Protected Module LanguageUtils
 		  '              classbody
 		  '          END CLASS ENDL
 		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, False)
+		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, LanguageUtils.NoWhiteSpaceFlag)
 		  
 		  // empty string ?
 		  If tokens.ubound < 0 Then 
@@ -290,7 +282,7 @@ Protected Module LanguageUtils
 		  //     GLOBAL 
 		  //   | namedObjectType 
 		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, False)
+		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, LanguageUtils.NoWhiteSpaceFlag)
 		  
 		  // empty string ?
 		  If tokens.ubound < 0 Then 
@@ -519,7 +511,7 @@ Protected Module LanguageUtils
 		  // ;
 		  // 
 		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, False)
+		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, LanguageUtils.NoWhiteSpaceFlag)
 		  
 		  // empty string ?
 		  If tokens.ubound < 0 Then 
@@ -702,7 +694,7 @@ Protected Module LanguageUtils
 		    Return parseFailure
 		  End If
 		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine(lines(0), False)
+		  Dim tokens() As String = LanguageUtils.TokenizeLine(lines(0), LanguageUtils.NoWhiteSpaceFlag)
 		  
 		  scope = kScopePrivate
 		  
@@ -1003,7 +995,7 @@ Protected Module LanguageUtils
 		    Return parseFailure
 		  End If
 		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine(lines(0), False)
+		  Dim tokens() As String = LanguageUtils.TokenizeLine(lines(0), LanguageUtils.NoWhiteSpaceFlag)
 		  
 		  // empty string ?
 		  If tokens.ubound < 0 Then 
@@ -1444,7 +1436,7 @@ Protected Module LanguageUtils
 		  //   | namedObjectType 
 		  
 		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, False)
+		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, LanguageUtils.NoWhiteSpaceFlag)
 		  
 		  // empty string ?
 		  If tokens.ubound < 0 Then 
@@ -1787,7 +1779,7 @@ Protected Module LanguageUtils
 		  // Append them to outVars.
 		  Redim outvars(-1)
 		  
-		  Dim tokens() As String = TokenizeLine(sourceLine, False)
+		  Dim tokens() As String = TokenizeLine(sourceLine, LanguageUtils.NoWhiteSpaceFlag)
 		  Dim accumulate_default As Boolean = True
 		  
 		  If tokens.ubound < 0 Then
@@ -1806,11 +1798,11 @@ Protected Module LanguageUtils
 		    
 		  ElseIf CrackMethodDeclaration(sourceline, attrs, scope, subFunc, methodName, params, returntype) = True Then
 		    
-		    tokens = TokenizeLine(params, False)
+		    tokens = TokenizeLine(params,  LanguageUtils.NoWhiteSpaceFlag)
 		    
 		  ElseIf CrackEventDeclaration(sourceline, attrs, scope, subFunc, methodName, params, returntype) = True Then
 		    
-		    tokens = TokenizeLine(params, False)
+		    tokens = TokenizeLine(params,  LanguageUtils.NoWhiteSpaceFlag)
 		    
 		  ElseIf tokens(0) = "Const" Then
 		    // We can just grab the next token as the local variable. 
@@ -1876,7 +1868,7 @@ Protected Module LanguageUtils
 		          Continue
 		        Else
 		          Break
-		          return // we got something like i( with no close
+		          Return // we got something like i( with no close
 		        End If
 		        
 		      ElseIf (state And kAsExpected) = kAsExpected And tokens(i) = "as" Then
@@ -2057,7 +2049,6 @@ Protected Module LanguageUtils
 		      outvars.Remove i
 		    End If
 		  Next
-		  
 		End Sub
 	#tag EndMethod
 
@@ -2114,8 +2105,8 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Function IsBlockStart(line as string) As boolean
-		  Dim blockEnder as string = BlockCloser(line)
+		Protected Function IsBlockStart(previousLineText as string, byref blockEnder as string) As boolean
+		  blockEnder = BlockCloser(previousLineText)
 		  If blockEnder <> "" Then 
 		    Return True
 		  End If
@@ -2127,61 +2118,10 @@ Protected Module LanguageUtils
 		  Dim params As String
 		  Dim returntype As String
 		  
-		  If LanguageUtils.CrackMethodDeclaration(line, attrs, scope, subFunc, codeItemName, params, returntype) Then
+		  If LanguageUtils.CrackMethodDeclaration(previousLineText, attrs, scope, subFunc, codeItemName, params, returntype) Then
 		    blockEnder = BlockCloser(subFunc)
 		    Return True
 		  End If
-		  // CrackClassDeclaration
-		  // CrackEventDeclaration
-		  // 
-		  // // Find the source that closes the given opening.
-		  // 
-		  // Dim aboveWord As String
-		  // Dim tokens() As String = TokenizeLine(openingSrc, False)
-		  // If tokens.ubound < 0 Then
-		  // Return ""
-		  // End If
-		  // 
-		  // aboveWord = tokens(0)
-		  // 
-		  // Select Case aboveWord
-		  // Case "if", "elseif", "else"
-		  // // watch out for the case of "else" in a "select"...
-		  // // the caller really should pass the select line instead
-		  // Return "end if"
-		  // Case "#if", "#elseif", "#else"
-		  // Return "#endif"
-		  // Case "for"
-		  // Return "next"
-		  // Case "do"
-		  // Return  "loop"
-		  // Case "while"
-		  // Return "wend"
-		  // Case "select", "case"
-		  // Return "end select"
-		  // Case "try", "catch", "finally"
-		  // Return "end try"
-		  // Case "sub"
-		  // Return "end sub"
-		  // Case "function"
-		  // Return "end function"
-		  // 
-		  // Case "public", "global", "private", "protected"
-		  // // next word is SUB or FUNCTION ?
-		  // If tokens.ubound < 1 Then
-		  // Return ""
-		  // End If
-		  // Select Case tokens(1)
-		  // Case "sub"
-		  // Return "end sub"
-		  // Case "function"
-		  // Return "end function"
-		  // End Select
-		  // 
-		  // End Select
-		  // 
-		  // Return ""
-		  
 		  
 		  Return False
 		End Function
@@ -2248,7 +2188,7 @@ Protected Module LanguageUtils
 		Protected Function IsEndOfFunctionLine(line as string) As boolean
 		  // END FUNCTION (rem // or ') nothing else
 		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine(line.Trim, False)
+		  Dim tokens() As String = LanguageUtils.TokenizeLine(line.Trim, LanguageUtils.NoWhiteSpaceFlag)
 		  
 		  If tokens.Ubound < 1 Then 
 		    Return False
@@ -2285,7 +2225,7 @@ Protected Module LanguageUtils
 		Protected Function IsEndOfSubLine(line as string) As boolean
 		  // END SUB (rem // or ') nothing else
 		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine(line.Trim, False)
+		  Dim tokens() As String = LanguageUtils.TokenizeLine(line.Trim, LanguageUtils.NoWhiteSpaceFlag)
 		  
 		  If tokens.Ubound < 1 Then 
 		    Return False
@@ -2447,14 +2387,6 @@ Protected Module LanguageUtils
 		  // Finally, we know it's numeric, but not a real number,
 		  // so we're done
 		  return true
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h1
-		Protected Function IsKeyword(word as string) As boolean
-		  
-		  Return KeywordDict.HasKey(word)
-		  
 		End Function
 	#tag EndMethod
 
@@ -2678,44 +2610,6 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Function LineIsBlockEnd(line as string) As boolean
-		  Dim tokens() As String = TokenizeLine(line, False)
-		  If tokens.ubound < 0 Then
-		    Return False
-		  End If
-		  
-		  Select Case True
-		    
-		  Case tokens.Count >= 1 And tokens(0) = "#endif"
-		  Case tokens.Count >= 1 And tokens(0) = "next"
-		  Case tokens.Count >= 1 And tokens(0) = "loop"
-		  Case tokens.Count >= 1 And tokens(0) = "wend"
-		    
-		  Case tokens.Count >= 1 And tokens(0) = "end"
-		    
-		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end if"
-		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end select"
-		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end try"
-		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end sub"
-		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end function"
-		    
-		  Else
-		    Return False
-		  End Select
-		  
-		  Return True
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h1
-		Protected Function LineIsBlockStart(line as string) As boolean
-		  
-		  return BlockCloser(line) <> ""
-		  
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h1
 		Protected Function MakeSignatureFromElements(name as string, params() as LanguageUtils.LocalVariable, returnType as String) As string
 		  
 		  // Return a string that is the signature
@@ -2920,11 +2814,11 @@ Protected Module LanguageUtils
 		    
 		  else
 		    // anything else -- grab to next delimiter
-		    j = FindAnyInStr( i+1, source, "<>""+-*/\^='.(), :"+EndOfLine )
+		    j = FindAnyInStr( i+1, source, "<>""+-*/\^='.(), :"+ EndOfLine + WhiteSpaceChars)
 		    If j < 1 Then 
 		      j = maxi+1
 		    End If
-		    return Mid( source, i, j - i )
+		    Return Mid( source, i, j - i )
 		  end if
 		  
 		  break // should never get here -- all cases above return something
@@ -2935,36 +2829,24 @@ Protected Module LanguageUtils
 		Protected Sub RunUnitTests()
 		  // Unit-test this module.
 		  
-		  UnitTestIsBlockStarter
-		  UnitTestLineIsBlockStart
+		  UnitTestTokenize
+		  UnitTestFirstToken
 		  
 		  UnitTestBlockCloser
-		  UnitTestLineIsBlockCloser
-		  
 		  UnitTestCommentStartPos
-		  
 		  UnitTestConvertComments
-		  
 		  UnitTestEndsInComment
-		  
 		  UnitTestEndsInLineCont
-		  
 		  UnitTestEnumDeclCracker
-		  
 		  UnitTestEventDeclCracker
-		  
 		  UnitTestExpect
-		  
 		  UnitTestFindAnyInStr
-		  
 		  UnitTestFindOpeningParen
 		  
 		  UnitTestFindParams
 		  
 		  UnitTestFindVarDecs
-		  
 		  // UnitTestFindVarHelper gets tested as part of FindVarDecs
-		  UnitTestFirstToken
 		  UnitTestIsEndOfCodeBlock
 		  UnitTestIsHexNumber()
 		  UnitTestIsIdent
@@ -2976,7 +2858,6 @@ Protected Module LanguageUtils
 		  UnitTestMethodDeclCracker
 		  UnitTestPropertyDeclCracker
 		  
-		  UnitTestTokenize
 		  // UnitTestTokenHelper gets tested as part of tokenize
 		  
 		  UnitTestIsEndOfCodeBlock
@@ -3138,7 +3019,7 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
-		Protected Function TokenizeLine(sourceLine As String, includeWhitespace As Boolean = true) As String()
+		Protected Function TokenizeLine(sourceLine As String, includeWhitespace As Integer = AllWhiteSpaceFlag) As String()
 		  // Break the given line up into tokens.
 		  // If includeWhitespace = true, then include whitespace as well,
 		  // so the original line can be completely reconstructed.
@@ -3150,15 +3031,36 @@ Protected Module LanguageUtils
 		  Dim token As String
 		  
 		  While pos <= maxpos
+		    
 		    token = NextToken( sourceLine, pos )
+		    
 		    If token = "" Then 
 		      Return out
 		    End If
-		    If includeWhitespace Or Not IsWhitespace(token) Then
+		    
+		    If includeWhitespace = AllWhiteSpaceFlag Then // keep everything - white space or not
+		      
 		      out.Append token
+		      
+		    ElseIf includeWhitespace = EndOfLineFlag Then
+		      
+		      If token.Contains(EndOfLine) Then // keep the end of lines
+		        out.Append EndOfLine
+		      ElseIf IsWhitespace(token) = False Then // keep no other white space
+		        out.Append token
+		      End If
+		      
+		    ElseIf includeWhitespace = NoWhiteSpaceFlag Then
+		      
+		      If IsWhitespace(token) = False Then // no white space
+		        out.Append token
+		      End If
+		      
 		    End If
+		    
 		    pos = pos + token.Len
-		  wend
+		    
+		  Wend
 		  
 		  return out
 		  
@@ -3166,23 +3068,33 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
-		Protected Function TokenizeSource(source As String, includeWhitespace As Boolean = true) As String()
+		Protected Function TokenizeSource(source As String, includeWhitespace As Integer = AllWhiteSpaceFlag) As String()
 		  // Break the source up into multiple lines.  Then tokenize each line
 		  
 		  dim out( -1 ) as String
 		  dim lines( -1 ) as String
 		  
-		  lines = Split( source, EndOfLine )
+		  lines = Split( ReplaceLineEndings(source, EndOfLine), EndOfLine)
 		  
-		  dim line, token as String
-		  dim temp( -1 ) as String
-		  for each line in lines
-		    temp = LanguageUtils.TokenizeLine( line, includeWhitespace )
+		  If lines.ubound > 0 Then
+		    For i As Integer = 0 To lines.ubound - 1
+		      lines(i) = lines(i) + EndOfLine
+		    Next i
+		  End If
+		  
+		  For i As Integer = 0 To lines.ubound
 		    
-		    for each token in temp
+		    Dim line As String 
+		    
+		    line = lines(i) 
+		    
+		    Dim temp() As String = LanguageUtils.TokenizeLine( line, includeWhitespace )
+		    
+		    For Each token As String In temp
 		      out.Append( token )
-		    next token
-		  next line
+		    Next token
+		    
+		  Next
 		  
 		  return out
 		End Function
@@ -3194,38 +3106,6 @@ Protected Module LanguageUtils
 		  ErrorIf BlockCloser("if foo=bar then") <> "end if"
 		  ErrorIf BlockCloser("do until foo") <> "loop"
 		  ErrorIf BlockCloser("while something") <> "wend"
-		  ErrorIf BlockCloser("select case") <> "end select"
-		  
-		  ErrorIf BlockCloser("elseif") <> "end if"
-		  ErrorIf BlockCloser("else") <> "end if"
-		  
-		  ErrorIf BlockCloser("#If") <> "#endif"
-		  ErrorIf BlockCloser("#ElseIf") <> "#endif"
-		  ErrorIf BlockCloser("#Else") <> "#endif"
-		  
-		  ErrorIf BlockCloser("for") <> "next"
-		  ErrorIf BlockCloser("do") <> "loop"
-		  
-		  ErrorIf BlockCloser("select") <> "end select"
-		  ErrorIf BlockCloser("case") <> "end select"
-		  
-		  ErrorIf BlockCloser("try") <> "end try"
-		  ErrorIf BlockCloser("catch") <> "end try"
-		  ErrorIf BlockCloser("finally") <> "end try"
-		  
-		  ErrorIf BlockCloser("sub") <> "end sub"
-		  ErrorIf BlockCloser("function") <> "end function"
-		  
-		  ErrorIf BlockCloser("public sub") <> "end sub"
-		  ErrorIf BlockCloser("global sub") <> "end sub"
-		  ErrorIf BlockCloser("private sub") <> "end sub"
-		  ErrorIf BlockCloser("protected sub") <> "end sub"
-		  
-		  ErrorIf BlockCloser("public function") <> "end function"
-		  ErrorIf BlockCloser("global function") <> "end function"
-		  ErrorIf BlockCloser("private function") <> "end function"
-		  ErrorIf BlockCloser("protected function") <> "end function"
-		  
 		  ErrorIf BlockCloser("move zig") <> ""
 		  
 		End Sub
@@ -3502,6 +3382,9 @@ Protected Module LanguageUtils
 		  UnitTestFindVarHelper "Function Foo(ByRef foo as Date, Assigns bar as Integer) as Boolean", "foo:Date,bar:Integer"
 		  UnitTestFindVarHelper "Attributes( asdfasdf ) Function Foo(ByRef foo as Date, Assigns bar as Integer) as string", "foo:Date,bar:Integer"
 		  
+		  UnitTestFindVarHelper "Private Sub Foo(bar() as Integer, baz(100) as String)", "bar:Integer():,baz:String():100"
+		  UnitTestFindVarHelper "Private Sub Foo(bar() as Integer, baz() as String)", "bar:Integer():,baz:String():"
+		  
 		  UnitTestFindVarHelper "Dim d As New Date", "d:Date"
 		  UnitTestFindVarHelper "Dim a(5),b(-1,-1),c() As Color", "a:Color():5,b:Color():-1,-1,c:Color():"
 		  UnitTestFindVarHelper "Dim a As Foo.Bar.Baz", "a:Foo.Bar.Baz"
@@ -3519,17 +3402,9 @@ Protected Module LanguageUtils
 		  UnitTestFindVarHelper "Static d As New Date", "d:Date"
 		  UnitTestFindVarHelper "Var d As New Date", "d:Date"
 		  
-		  UnitTestFindVarHelper "d,e,f As Date", "d:Date,e:Date,f:Date"
-		  UnitTestFindVarHelper "a,b(-1),c(-1,-1) As Color", "a:Color,b:Color():-1,c:Color():-1,-1"
-		  
 		  UnitTestFindVarHelper "i = i + 1", ""
 		  
 		  UnitTestFindVarHelper "Enum AdressTypes as Uint8", ""
-		  
-		  UnitTestFindVarHelper "For i as integer =  1 to 10", "i:integer"
-		  UnitTestFindVarHelper "For each foo as string in d.keys", "foo:string"
-		  
-		  UnitTestFindVarHelper "For i = 1 to 10", ""
 		  
 		End Sub
 	#tag EndMethod
@@ -3545,16 +3420,22 @@ Protected Module LanguageUtils
 		  
 		  Dim i As Integer
 		  Dim got As String
-		  for i = 0 to UBound( vars )
+		  
+		  For i = 0 To UBound( vars )
+		    
 		    ErrorIf vars(i).firstLine <> 100
+		    
 		    If i > 0 Then 
 		      got = got + ","
 		    End If
+		    
 		    got = got + vars(i).name + ":" + vars(i).type
+		    
 		    If vars(i).isarray Then
 		      got = got + ":" + vars(i).bounds
 		    End If
-		  next
+		    
+		  Next
 		  
 		  DetailedErrorIf got <> expected, "Vars found: " + got _
 		  + EndOfLine + "Expected: " + expected
@@ -3579,56 +3460,6 @@ Protected Module LanguageUtils
 		  ErrorIf FirstToken("""foo bar"") = true") <> """foo bar"""
 		  ErrorIf FirstToken("then dosomething") <> "then"
 		  ErrorIf FirstToken("""foo """"bar"""" baz"") = true") <> """foo """"bar"""" baz"""
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21, CompatibilityFlags = TargetHasGUI
-		Private Sub UnitTestIsBlockStarter()
-		  
-		  ErrorIf IsBlockStart("if foo=bar then") <> True
-		  ErrorIf IsBlockStart("do until foo") <> True
-		  ErrorIf IsBlockStart("while something") <>  True
-		  ErrorIf IsBlockStart("move zig") <> false
-		  
-		  
-		  
-		  ErrorIf IsBlockStart("if foo=bar then") <> True
-		  ErrorIf IsBlockStart("do until foo") <> True
-		  ErrorIf IsBlockStart("while something") <> True
-		  ErrorIf IsBlockStart("select case") <> True
-		  
-		  ErrorIf IsBlockStart("elseif") <> True
-		  ErrorIf IsBlockStart("else") <> True
-		  
-		  ErrorIf IsBlockStart("#If") <> True
-		  ErrorIf IsBlockStart("#ElseIf") <> True
-		  ErrorIf IsBlockStart("#Else") <> True
-		  
-		  ErrorIf IsBlockStart("for") <> True
-		  ErrorIf IsBlockStart("do") <> True
-		  
-		  ErrorIf IsBlockStart("select") <> True
-		  ErrorIf IsBlockStart("case") <> True
-		  
-		  ErrorIf IsBlockStart("try") <> True
-		  ErrorIf IsBlockStart("catch") <> True
-		  ErrorIf IsBlockStart("finally") <> True
-		  
-		  ErrorIf IsBlockStart("sub") <> True
-		  ErrorIf IsBlockStart("function") <> True
-		  
-		  ErrorIf IsBlockStart("public sub") <> True
-		  ErrorIf IsBlockStart("global sub") <> True
-		  ErrorIf IsBlockStart("private sub") <> True
-		  ErrorIf IsBlockStart("protected sub") <> True
-		  
-		  ErrorIf IsBlockStart("public function") <> True
-		  ErrorIf IsBlockStart("global function") <> True
-		  ErrorIf IsBlockStart("private function") <> True
-		  ErrorIf IsBlockStart("protected function") <> True
-		  
-		  ErrorIf IsBlockStart("move zig") <> False
 		  
 		End Sub
 	#tag EndMethod
@@ -3759,71 +3590,6 @@ Protected Module LanguageUtils
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h21, CompatibilityFlags = TargetHasGUI
-		Private Sub UnitTestLineIsBlockCloser()
-		  
-		  ErrorIf LineIsBlockEnd("end if") <> True
-		  ErrorIf LineIsBlockEnd("loop") <> True
-		  ErrorIf LineIsBlockEnd("wend") <> True
-		  ErrorIf LineIsBlockEnd("end select") <> True
-		  
-		  ErrorIf LineIsBlockEnd("#endif") <> True
-		  
-		  ErrorIf LineIsBlockEnd("next") <> True
-		  
-		  ErrorIf LineIsBlockEnd("end try") <> True
-		  
-		  ErrorIf LineIsBlockEnd("end sub") <> True
-		  ErrorIf LineIsBlockEnd("end function") <> True
-		  
-		  ErrorIf LineIsBlockEnd("move zig") <> False
-		  
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21, CompatibilityFlags = TargetHasGUI
-		Private Sub UnitTestLineIsBlockStart()
-		  
-		  ErrorIf LineIsBlockStart("if foo=bar then") <> True
-		  ErrorIf LineIsBlockStart("do until foo") <> True
-		  ErrorIf LineIsBlockStart("while something") <> True
-		  ErrorIf LineIsBlockStart("select case") <> True
-		  
-		  ErrorIf LineIsBlockStart("elseif") <> True
-		  ErrorIf LineIsBlockStart("else") <> True
-		  
-		  ErrorIf LineIsBlockStart("#If") <> True
-		  ErrorIf LineIsBlockStart("#ElseIf") <> True
-		  ErrorIf LineIsBlockStart("#Else") <> True
-		  
-		  ErrorIf LineIsBlockStart("for") <> True
-		  ErrorIf LineIsBlockStart("do") <> True
-		  
-		  ErrorIf LineIsBlockStart("select") <> True
-		  ErrorIf LineIsBlockStart("case") <> True
-		  
-		  ErrorIf LineIsBlockStart("try") <> True
-		  ErrorIf LineIsBlockStart("catch") <> True
-		  ErrorIf LineIsBlockStart("finally") <> True
-		  
-		  ErrorIf LineIsBlockStart("sub") <> True
-		  ErrorIf LineIsBlockStart("function") <> True
-		  
-		  ErrorIf LineIsBlockStart("public sub") <> True
-		  ErrorIf LineIsBlockStart("global sub") <> True
-		  ErrorIf LineIsBlockStart("private sub") <> True
-		  ErrorIf LineIsBlockStart("protected sub") <> True
-		  
-		  ErrorIf LineIsBlockStart("public function") <> True
-		  ErrorIf LineIsBlockStart("global function") <> True
-		  ErrorIf LineIsBlockStart("private function") <> True
-		  ErrorIf LineIsBlockStart("protected function") <> True
-		  
-		  ErrorIf LineIsBlockStart("move zig") <> false
-		  
-		End Sub
-	#tag EndMethod
-
 	#tag Method, Flags = &h21
 		Private Sub UnitTestMakeSignature()
 		  #If DebugBuild
@@ -3943,7 +3709,7 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h21, CompatibilityFlags = TargetHasGUI
-		Private Sub UnitTestTokenHelper(source As String, expected As String, includeWhitespace As Boolean = true)
+		Private Sub UnitTestTokenHelper(source As String, expected As String, includeWhitespace As Integer = AllWhiteSpaceFlag)
 		  // This is a helper function for UnitTestTokenize.  The source is just
 		  // plain RB source; "expected" is a string with vertical bars inserted
 		  // between the tokens.
@@ -3969,7 +3735,7 @@ Protected Module LanguageUtils
 		  
 		  UnitTestTokenHelper "Dim i, j,maxi as Integer", "Dim| |i|,| |j|,|maxi| |as| |Integer"
 		  
-		  UnitTestTokenHelper "Dim i, j,maxi as Integer", "Dim|i|,|j|,|maxi|as|Integer", False
+		  UnitTestTokenHelper "Dim i, j,maxi as Integer", "Dim|i|,|j|,|maxi|as|Integer", LanguageUtils.NoWhiteSpaceFlag
 		  
 		  UnitTestTokenHelper "x=UBound(vars)", "x|=|UBound|(|vars|)"
 		  
@@ -3977,12 +3743,21 @@ Protected Module LanguageUtils
 		  
 		  UnitTestTokenHelper "rb3d=Foo42"+EndOfLine, "rb3d|=|Foo42|"+EndOfLine
 		  
+		  UnitTestTokenHelper "rb3d=Foo42"+EndOfLine, "rb3d|=|Foo42", LanguageUtils.NoWhiteSpaceFlag
+		  
+		  UnitTestTokenHelper "rb3d = Foo42 "+EndOfLine, "rb3d|=|Foo42|"+EndOfLine, LanguageUtils.EndOfLineFlag
+		  
 		  // test an oddity of the tokenizer
 		  UnitTestTokenHelper "Picture         =   ""Angebot_Erstellen_Neu.frx"":1D93","Picture|         |=|   |""Angebot_Erstellen_Neu.frx""|:|1|D93"
 		  
 		  UnitTestTokenHelper "ADODB.EventReasonEnum, adStatus As ADODB.EventStatusEnum,","ADODB|.|EventReasonEnum|,| |adStatus| |As| |ADODB|.|EventStatusEnum|,"
 		  
 		  UnitTestTokenHelper " dim i as integer=1^2<>3>=4<=5^6<7>8" ," |dim| |i| |as| |integer|=|1|^|2|<>|3|>=|4|<=|5|^|6|<|7|>|8" 
+		  
+		  // runs of whitespaces coalesced properly ?
+		  UnitTestTokenHelper "Property Width As Integer" + EndOfLine + "Get" + &u09 + EndOfLine + "#If forUseInIDEScript = False", "Property| |Width| |As| |Integer|" + EndOfLine + "|Get|" + &u09 + EndOfLine + "|#If| |forUseInIDEScript| |=| |False"
+		  
+		  UnitTestTokenHelper "if    foo   =   bar    then", "if|    |foo|   |=|   |bar|    |then"
 		  
 		End Sub
 	#tag EndMethod
@@ -5905,6 +5680,24 @@ Protected Module LanguageUtils
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+		Protected Function WhitespaceChars() As String
+		  // Return whether the first character of c is a whitespace character.
+		  Static retValue As String
+		  
+		  If retvalue.LenB <= 0 Then
+		    
+		    For i As Integer = 0 To 32
+		      retvalue = retvalue + ChrB(i)
+		    Next i
+		    
+		  End If
+		  
+		  Return retValue
+		  
+		End Function
+	#tag EndMethod
+
 
 	#tag Property, Flags = &h1
 		Protected mKeywordDict As Dictionary
@@ -5963,7 +5756,13 @@ Protected Module LanguageUtils
 	#tag EndComputedProperty
 
 
+	#tag Constant, Name = AllWhiteSpaceFlag, Type = Double, Dynamic = False, Default = \"3", Scope = Protected
+	#tag EndConstant
+
 	#tag Constant, Name = blockMatches, Type = String, Dynamic = False, Default = \"#if\t#else|#elseif|#endif\n#elseif\t#else|#elseif|#endif\n#else\t#endif\nif\telse|elseif|end|end if\nelseif\telse|elseif|end|end if\nelse\telse|end|end if|end select\nfor\tnext\ndo\tloop\nwhile\twend\nselect\tcase|else|end|end select\ncase\tcase|else|end|end select\ntry\tcatch|finally|end|end try\ncatch\tfinally|end|end try\nfinally\tend|end try\nsub\tend sub\nfunction\tend function\n", Scope = Protected
+	#tag EndConstant
+
+	#tag Constant, Name = EndOfLineFlag, Type = Double, Dynamic = False, Default = \"2", Scope = Protected
 	#tag EndConstant
 
 	#tag Constant, Name = kCLASS, Type = String, Dynamic = False, Default = \"Class", Scope = Protected
@@ -5994,6 +5793,9 @@ Protected Module LanguageUtils
 	#tag EndConstant
 
 	#tag Constant, Name = kSTATIC, Type = String, Dynamic = False, Default = \"Static", Scope = Protected
+	#tag EndConstant
+
+	#tag Constant, Name = NoWhiteSpaceFlag, Type = Double, Dynamic = False, Default = \"1", Scope = Protected
 	#tag EndConstant
 
 	#tag Constant, Name = parseFailure, Type = Boolean, Dynamic = False, Default = \"false", Scope = Protected
