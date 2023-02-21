@@ -84,6 +84,181 @@ Protected Module StringExtensions
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function GuessEncoding(s As String) As TextEncoding
+		  // from https://forum.xojo.com/t/how-to-get-unknown-encoding-of-textinputstream/21434/8
+		  
+		  // Guess what text encoding the text in the given string is in.
+		  // This ignores the encoding set on the string, and guesses
+		  // one of the following:
+		  //
+		  //   * UTF-32
+		  //   * UTF-16
+		  //   * UTF-8
+		  //   * Encodings.SystemDefault
+		  //
+		  // Written by Joe Strout
+		  
+		  #Pragma DisableBackgroundTasks
+		  #Pragma DisableBoundsChecking
+		  
+		  Static isBigEndian, endianChecked As Boolean
+		  If Not endianChecked Then
+		    Dim temp As String = Encodings.UTF16.Chr( &hFEFF )
+		    isBigEndian = (AscB( MidB( temp, 1, 1 ) ) = &hFE)
+		    endianChecked = True
+		  End If
+		  
+		  // check for a BOM
+		  Dim b0 As Integer = AscB( s.MidB( 1, 1 ) )
+		  Dim b1 As Integer = AscB( s.MidB( 2, 1 ) )
+		  Dim b2 As Integer = AscB( s.MidB( 3, 1 ) )
+		  Dim b3 As Integer = AscB( s.MidB( 4, 1 ) )
+		  If b0=0 And b1=0 And b2=&hFE And b3=&hFF Then
+		    // UTF-32, big-endian
+		    If isBigEndian Then
+		      #If RBVersion >= 2012.02
+		        Return Encodings.UTF32
+		      #Else
+		        Return Encodings.UCS4
+		      #EndIf
+		    Else
+		      Return Encodings.UTF32BE
+		    End If
+		  ElseIf b0=&hFF And b1=&hFE And b2=0 And b3=0 And s.LenB >= 4 Then
+		    // UTF-32, little-endian
+		    If isBigEndian Then
+		      Return Encodings.UTF32LE
+		    Else
+		      #If RBVersion >= 2012.02
+		        Return Encodings.UTF32
+		      #Else
+		        Return Encodings.UCS4
+		      #EndIf
+		    End If
+		  ElseIf b0=&hFE And b1=&hFF Then
+		    // UTF-16, big-endian
+		    If isBigEndian Then
+		      Return Encodings.UTF16
+		    Else
+		      Return Encodings.UTF16BE
+		    End If
+		  ElseIf b0=&hFF And b1=&hFE Then
+		    // UTF-16, little-endian
+		    If isBigEndian Then
+		      Return Encodings.UTF16LE
+		    Else
+		      Return Encodings.UTF16
+		    End If
+		  ElseIf b0=&hEF And b1=&hBB And b1=&hBF Then
+		    // UTF-8 (ah, a sensible encoding where endianness doesn't matter!)
+		    Return Encodings.UTF8
+		  End If
+		  
+		  // no BOM; see if it's entirely ASCII.
+		  Dim m As MemoryBlock = s
+		  Dim i, maxi As Integer = s.LenB - 1
+		  For i = 0 To maxi
+		    If m.Byte(i) > 127 Then Exit
+		  Next
+		  If i > maxi Then Return Encodings.ASCII
+		  
+		  // Not ASCII; check for a high incidence of nulls every other byte,
+		  // which suggests UTF-16 (at least in Roman text).
+		  Dim nulls(1) As Integer  // null count in even (0) and odd (1) bytes
+		  For i = 0 To maxi
+		    If m.Byte(i) = 0 Then
+		      nulls(i Mod 2) = nulls(i Mod 2) + 1
+		    End If
+		  Next
+		  If nulls(0) > nulls(1)*2 And nulls(0) > maxi\2 Then
+		    // UTF-16, big-endian
+		    If isBigEndian Then
+		      Return Encodings.UTF16
+		    Else
+		      Return Encodings.UTF16BE
+		    End If
+		  ElseIf nulls(1) > nulls(0)*2 And nulls(1) > maxi\2 Then
+		    // UTF-16, little-endian
+		    If isBigEndian Then
+		      Return Encodings.UTF16LE
+		    Else
+		      Return Encodings.UTF16
+		    End If
+		  End If
+		  
+		  // it's not ASCII; check for illegal UTF-8 characters.
+		  // See Table 3.1B, "Legal UTF-8 Byte Sequences",
+		  // at <http://unicode.org/versions/corrigendum1.html>
+		  Dim b As Byte
+		  For i = 0 To maxi
+		    Select Case m.Byte(i)
+		    Case &h00 To &h7F
+		      // single-byte character; just continue
+		    Case &hC2 To &hDF
+		      // one additional byte
+		      If i+1 > maxi Then Exit For
+		      b = m.Byte(i+1)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      i = i+1
+		    Case &hE0
+		      // two additional bytes
+		      If i+2 > maxi Then Exit For
+		      b = m.Byte(i+1)
+		      If b < &hA0 Or b > &hBF Then Exit For
+		      b = m.Byte(i+2)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      i = i+2
+		    Case &hE1 To &hEF
+		      // two additional bytes
+		      If i+2 > maxi Then Exit For
+		      b = m.Byte(i+1)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      b = m.Byte(i+2)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      i = i+2
+		    Case &hF0
+		      // three additional bytes
+		      If i+3 > maxi Then Exit For
+		      b = m.Byte(i+1)
+		      If b < &h90 Or b > &hBF Then Exit For
+		      b = m.Byte(i+2)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      b = m.Byte(i+3)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      i = i+3
+		    Case &hF1 To &hF3
+		      // three additional bytes
+		      If i+3 > maxi Then Exit For
+		      b = m.Byte(i+1)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      b = m.Byte(i+2)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      b = m.Byte(i+3)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      i = i+3
+		    Case &hF4
+		      // three additional bytes
+		      If i+3 > maxi Then Exit For
+		      b = m.Byte(i+1)
+		      If b < &h80 Or b > &h8F Then Exit For
+		      b = m.Byte(i+2)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      b = m.Byte(i+3)
+		      If b < &h80 Or b > &hBF Then Exit For
+		      i = i+3
+		    Else
+		      Exit For
+		    End Select
+		  Next i
+		  If i > maxi Then Return Encodings.UTF8  // no illegal UTF-8 sequences, so that's probably what it is
+		  
+		  // If not valid UTF-8, then let's just guess the system default.
+		  Return Encodings.SystemDefault
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function IsDigit(extends candidate as string) As Boolean
 		  // we're checking single digits
 		  If Len(candidate) <> 1 Then

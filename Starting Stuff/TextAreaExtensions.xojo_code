@@ -86,22 +86,24 @@ Protected Module TextAreaExtensions
 
 	#tag Method, Flags = &h0
 		Function ScrollerStyle(extends ta as textArea) As ScrollerStyles
-		  // https://developer.apple.com/documentation/appkit/nsscroller/1523591-scrollerstyle?language=objc
-		  
-		  Declare Function scrollerStyle Lib "Foundation" Selector "scrollerStyle" (obj As Integer) As Integer
-		  
-		  Dim style As Integer = scrollerStyle(ta.Handle)
-		  
-		  // Style will be 0 for "Legacy" and 1 for "Overlay"
-		  Select Case style
+		  #If TargetMacOS
+		    // https://developer.apple.com/documentation/appkit/nsscroller/1523591-scrollerstyle?language=objc
 		    
-		  Case 0, 1
-		    Return ScrollerStyles(style)
+		    Declare Function scrollerStyle Lib "Foundation" Selector "scrollerStyle" (obj As Integer) As Integer
 		    
-		  Else
-		    Return ScrollerStyles.Unknown
-		  End Select
-		  
+		    Dim style As Integer = scrollerStyle(ta.Handle)
+		    
+		    // Style will be 0 for "Legacy" and 1 for "Overlay"
+		    Select Case style
+		      
+		    Case 0, 1
+		      Return ScrollerStyles(style)
+		      
+		    Else
+		      Return ScrollerStyles.Unknown
+		    End Select
+		    
+		  #EndIf
 		  
 		End Function
 	#tag EndMethod

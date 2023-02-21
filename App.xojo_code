@@ -24,7 +24,7 @@ Inherits Application
 		  FolderitemExtensions.RunUnitTests
 		  Security.RunUnitTests
 		  PlatformUtilities.RunUnitTests
-		  
+		  DateExtensions.RunUnitTests
 		  
 		  #If targetMacOS Then
 		    // --- This code snippet was made from the Ohanaware App Kit 2021 - ohanaware.com
@@ -48,6 +48,7 @@ Inherits Application
 		  #EndIf
 		  
 		  MacOS.SetDockLabel("Fooey !")
+		  
 		  
 		End Sub
 	#tag EndEvent

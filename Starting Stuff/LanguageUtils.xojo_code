@@ -1,6 +1,14 @@
 #tag Module
 Protected Module LanguageUtils
 	#tag CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
+		Protected Function ArrayKeywords() As String()
+		  
+		  Return Array("append", "remove", "indexof", "insert", "shuffle", "sort", "sortwith" )
+		  
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h21
 		Private Sub assert(test as boolean, msg as string)
 		  If test = False Then
@@ -2390,6 +2398,13 @@ Protected Module LanguageUtils
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h1
+		Protected Function IsKeyword(word as string) As boolean
+		  Return KeywordDict.HasKey(word)
+		  
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
 		Protected Function IsRealNumber(token as String) As Boolean
 		  // First, check to see if the token is numeric
@@ -2605,6 +2620,46 @@ Protected Module LanguageUtils
 		  loop until found
 		  
 		  return posB
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
+		Protected Function LineIsBlockEnd(line as string) As boolean
+		  
+		  Dim tokens() As String = TokenizeLine(line, LanguageUtils.NoWhiteSpaceFlag)
+		  
+		  If tokens.ubound < 0 Then
+		    Return False
+		  End If
+		  
+		  Select Case True
+		    
+		  Case tokens.Count >= 1 And tokens(0) = "#endif"
+		  Case tokens.Count >= 1 And tokens(0) = "next"
+		  Case tokens.Count >= 1 And tokens(0) = "loop"
+		  Case tokens.Count >= 1 And tokens(0) = "wend"
+		    
+		  Case tokens.Count >= 1 And tokens(0) = "end"
+		    
+		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end if"
+		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end select"
+		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end try"
+		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end sub"
+		  Case tokens.Count >= 2 And tokens(0) + " " + tokens(1) = "end function"
+		    
+		  Else
+		    Return False
+		  End Select
+		  
+		  Return True
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
+		Protected Function LineIsBlockStart(line as string) As boolean
+		  Return BlockCloser(line) <> ""
 		  
 		End Function
 	#tag EndMethod

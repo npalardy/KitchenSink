@@ -62,6 +62,7 @@ Class=CreateDirectoryException;Starting Stuff/FolderitemExtensions/CreateDirecto
 Class=LocalVariable;Starting Stuff/LanguageUtils/LocalVariable.xojo_code;&hFFFFFFFFBCAD77A8;&hFFFFFFFFBC4AE677;false
 Module=US;Starting Stuff/Keyboards/US.xojo_code;&h0000000007723FFF;&h000000006388E7FF;false
 Class=Logger;Starting Stuff/Debug/Logger.xojo_code;&h0000000015EF1FFF;&h0000000026D53FFF;false
+Module=DateExtensions;Starting Stuff/DateExtensions.xojo_code;&h000000005919C7FF;&h000000007196DFFF;false
 DefaultWindow=AppearanceDemoWindow
 AppMenuBar=MainMenuBar
 MajorVersion=1
