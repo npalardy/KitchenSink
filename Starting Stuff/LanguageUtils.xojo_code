@@ -3099,7 +3099,7 @@ Protected Module LanguageUtils
 		      
 		    ElseIf includeWhitespace = EndOfLineFlag Then
 		      
-		      If token.Contains(EndOfLine) Then // keep the end of lines
+		      If StringUtils.Contains(token, EndOfLine) Then // keep the end of lines
 		        out.Append EndOfLine
 		      ElseIf IsWhitespace(token) = False Then // keep no other white space
 		        out.Append token

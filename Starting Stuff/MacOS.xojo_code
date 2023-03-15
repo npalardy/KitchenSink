@@ -27,6 +27,26 @@ Protected Module MacOS
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Sub CrashOnMacOSException()
+		  #If TargetMacOS
+		    
+		    Const FoundationLib = "Foundation"
+		    
+		    Declare Function standardUserDefaults Lib FoundationLib Selector "standardUserDefaults"(NSUserDefaultsClass As Ptr) As Ptr
+		    Declare Function NSClassFromString Lib FoundationLib(ClassName As CFStringRef) As Ptr
+		    
+		    Static standardUserDefaultsPtr As Ptr = standardUserDefaults(NSClassFromString("NSUserDefaults"))
+		    
+		    
+		    Declare Sub setBool Lib FoundationLib Selector "setBool:forKey:"(NSUserDefaults As Ptr, value As Boolean, Key As CFStringRef)
+		    setBool(standardUserDefaultsPtr, True, "NSApplicationCrashOnExceptions")
+		    
+		  #EndIf
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Sub CreateAliasAt(Extends f as FolderItem, aliasFile as FolderItem)
 		  #if TargetMacOS
 		    If f Is Nil then
