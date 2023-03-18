@@ -27,6 +27,22 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Function Concat(paramarray vArr as variant) As string
+		  Dim results() As String
+		  
+		  For Each v As Variant In vArr
+		    
+		    results.append v.StringValue
+		    
+		  Next
+		  
+		  Return Join(results, "")
+		  
+		  
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0, CompatibilityFlags = TargetHasGUI
 		Function Contains(extends s As String, what As String) As Boolean
 		  #Pragma BackgroundTasks False
@@ -1694,7 +1710,23 @@ Protected Module StringUtils
 
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
-		  Dim Logger As debug.logger = CurrentMethodName
+		  #If debugbuild
+		    
+		    Dim Logger As debug.logger = CurrentMethodName
+		    
+		    If True Then
+		      
+		      Debug.Assert Concat( "123", 456, 7.5 ) = "1234567.5", "concat failed"
+		      
+		      Debug.Assert Concat( "123", Nil, 7.5 ) = "1237.5", "concat failed"
+		      
+		      Dim d As DateTime = New DateTime(2023,03,18,11,16,38,0, New TimeZone(-7*60*60) ) // MDT
+		      
+		      Debug.Assert Concat( "123", d, 7.5 ) = "1232023-03-18 11:16:387.5", "concat failed"
+		      
+		    End If
+		    
+		  #EndIf
 		End Sub
 	#tag EndMethod
 
