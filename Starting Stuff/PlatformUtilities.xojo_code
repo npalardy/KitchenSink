@@ -166,6 +166,36 @@ Protected Module PlatformUtilities
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Function get_errno() As Integer
+		  // From Andrew Lambert
+		  // https://forum.xojo.com/t/accessing-errno-generated-by-an-external-c-library/75151/7
+		  
+		  Dim err As Integer
+		  Dim mb As MemoryBlock
+		  
+		  #If TargetWin32 Then
+		    Declare Function _get_errno Lib "msvcrt" (ByRef Error As Integer) As Integer
+		    Dim e As Integer = _get_errno(err)
+		    If e <> 0 Then 
+		      err = e
+		    End If
+		  #ElseIf TargetLinux
+		    Declare Function __errno_location Lib "libc.so" () As Ptr
+		    mb = __errno_location()
+		  #ElseIf TargetMacOS
+		    Declare Function __error Lib "System" () As Ptr
+		    mb = __error()
+		  #EndIf
+		  If mb <> Nil Then 
+		    err = mb.Int32Value(0)
+		  End If
+		  
+		  Return err
+		  
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h21
 		Private Function HIBYTE(wValue as Uint16) As Uint8
 		  return bitwise.shiftright(wvalue and &hFF00,8)
