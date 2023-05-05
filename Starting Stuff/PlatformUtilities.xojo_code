@@ -83,6 +83,14 @@ Protected Module PlatformUtilities
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Function CPUType() As string
+		  Initialize
+		  
+		  Return m_cputype
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function DoubleClickInterval() As Double
 		  // returns as double that is the # of TICKS
 		  
@@ -214,9 +222,9 @@ Protected Module PlatformUtilities
 		    
 		    // --- We're using 10.10
 		    Declare Function NSClassFromString Lib "AppKit" ( className As CFStringRef ) As Ptr
-		    Declare Function processInfo Lib "AppKit" selector "processInfo" ( ClassRef As Ptr ) As Ptr
+		    Declare Function processInfo Lib "AppKit" Selector "processInfo" ( ClassRef As Ptr ) As Ptr
 		    Dim myInfo As Ptr = processInfo( NSClassFromString( "NSProcessInfo" ) )
-		    Declare Function operatingSystemVersion Lib "AppKit" selector "operatingSystemVersion" ( NSProcessInfo As Ptr ) As OSVersionInfo
+		    Declare Function operatingSystemVersion Lib "AppKit" Selector "operatingSystemVersion" ( NSProcessInfo As Ptr ) As OSVersionInfo
 		    Dim rvalue As OSVersionInfo = operatingSystemVersion( myInfo )
 		    
 		    m_MajorVersion = rValue.major
@@ -236,11 +244,16 @@ Protected Module PlatformUtilities
 		    Dim size As UInteger = 128
 		    Dim mb As New memoryblock(size)
 		    
-		    If sysctlbyname( "kern.osversion", mb, size, Nil, 0 ) <> 0 Then
-		      Return 
+		    If sysctlbyname( "kern.osversion", mb, size, Nil, 0 ) = 0 Then
+		      m_build = Trim(mb.CString(0))
 		    End If
 		    
-		    m_build = Trim(mb.CString(0))
+		    size = 256
+		    mb = New memoryblock(size)
+		    Dim retvalue As Integer = sysctlbyname( "machdep.cpu.brand_string", mb, size, Nil, 0 )
+		    If sysctlbyname( "machdep.cpu.brand_string", mb, size, Nil, 0 ) = 0 Then
+		      m_cputype = Trim(mb.CString(0))
+		    End If
 		    
 		  #ElseIf TargetWindows
 		    
@@ -643,6 +656,10 @@ Protected Module PlatformUtilities
 
 	#tag Property, Flags = &h21
 		Private m_Build As string
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private m_cputype As string
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
