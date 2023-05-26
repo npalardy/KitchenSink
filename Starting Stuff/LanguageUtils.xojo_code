@@ -2882,47 +2882,50 @@ Protected Module LanguageUtils
 
 	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
 		Protected Sub RunUnitTests()
-		  // Unit-test this module.
-		  
-		  UnitTestTokenize
-		  UnitTestFirstToken
-		  
-		  UnitTestBlockCloser
-		  UnitTestCommentStartPos
-		  UnitTestConvertComments
-		  UnitTestEndsInComment
-		  UnitTestEndsInLineCont
-		  UnitTestEnumDeclCracker
-		  UnitTestEventDeclCracker
-		  UnitTestExpect
-		  UnitTestFindAnyInStr
-		  UnitTestFindOpeningParen
-		  
-		  UnitTestFindParams
-		  
-		  UnitTestFindVarDecs
-		  // UnitTestFindVarHelper gets tested as part of FindVarDecs
-		  UnitTestIsEndOfCodeBlock
-		  UnitTestIsHexNumber()
-		  UnitTestIsIdent
-		  UnitTestIsInStringLiteral
-		  UnitTestMakeSignature
-		  
-		  UnitTestMakeSignatureForEvent
-		  
-		  UnitTestMethodDeclCracker
-		  UnitTestPropertyDeclCracker
-		  
-		  // UnitTestTokenHelper gets tested as part of tokenize
-		  
-		  UnitTestIsEndOfCodeBlock
-		  
-		  UnitTestFindParams
-		  
-		  UnitTestConvertComments()
-		  
-		  UnitTestExpect()
-		  
+		  #If DebugBuild
+		    // Unit-test this module.
+		    
+		    UnitTestTokenize
+		    UnitTestFirstToken
+		    
+		    UnitTestBlockCloser
+		    UnitTestCommentStartPos
+		    UnitTestConvertComments
+		    UnitTestEndsInComment
+		    UnitTestEndsInLineCont
+		    UnitTestEnumDeclCracker
+		    UnitTestEventDeclCracker
+		    UnitTestExpect
+		    UnitTestFindAnyInStr
+		    UnitTestFindOpeningParen
+		    
+		    UnitTestFindParams
+		    
+		    UnitTestFindVarDecs
+		    // UnitTestFindVarHelper gets tested as part of FindVarDecs
+		    UnitTestIsEndOfCodeBlock
+		    UnitTestIsHexNumber()
+		    UnitTestIsIdent
+		    UnitTestIsInStringLiteral
+		    UnitTestMakeSignature
+		    
+		    UnitTestMakeSignatureForEvent
+		    
+		    UnitTestMethodDeclCracker
+		    UnitTestPropertyDeclCracker
+		    
+		    // UnitTestTokenHelper gets tested as part of tokenize
+		    
+		    UnitTestIsEndOfCodeBlock
+		    
+		    UnitTestFindParams
+		    
+		    UnitTestConvertComments()
+		    
+		    UnitTestExpect()
+		    
+		    LocalVariable.RunUnitTests
+		  #EndIf
 		End Sub
 	#tag EndMethod
 
