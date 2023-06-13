@@ -2064,7 +2064,8 @@ Protected Module LanguageUtils
 		Protected Function FirstToken(source As String) As String
 		  // Return the first token of the given source.
 		  
-		  return NextToken( source, 1 )
+		  Dim readtoken As Token = NextToken( source, 1 )
+		  Return readtoken.stringvalue
 		  
 		End Function
 	#tag EndMethod
@@ -2753,30 +2754,29 @@ Protected Module LanguageUtils
 		  
 		  Dim posB As Integer
 		  Dim maxpos As Integer
-		  Dim token As String
 		  
-		  if firstWord = "if" then
+		  If firstWord = "if" Then
 		    // "if" is a bit of a special case, since it has both a single-line
 		    // and a block form.  The difference is whether there is anything
 		    // after the "then".
 		    posB = firstWord.Len
 		    maxpos = sourceLine.Len
-		    while posB <= maxpos
-		      token = NextToken( sourceLine, posB )
-		      posB = posB + token.Len
-		      if token = "then" then
+		    While posB <= maxpos
+		      Dim tk As token = NextToken( sourceLine, posB )
+		      posB = posB + tk.read
+		      If tk.StringValue = "then" Then
 		        // ok, if next token is not a comment or end of line, then
 		        // we have a single-line if and need no match below
-		        do
-		          token = NextToken( sourceLine, posB )
-		          posB = posB + token.Len
-		        loop until token = "" or not IsWhitespace( token )
-		        If token = "" Or Left(token,1) = "'" Or Left(token,2) = "//" Or Left(token,4) = "Rem " Then 
+		        Do
+		          tk = NextToken( sourceLine, posB )
+		          posB = posB + tk.read
+		        loop until tk.read = 0 
+		        If tk.stringvalue = "" Or Left(tk.stringvalue,1) = "'" Or Left(tk.stringvalue,2) = "//" Or Left(tk.stringvalue,4) = "Rem " Then 
 		          Return True
 		        End If
 		        Return False
 		      end if
-		      If token = "" Then 
+		      If tk.read = 0 Then 
 		        Exit
 		      End If
 		    wend
@@ -2789,7 +2789,7 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
-		Protected Function NextToken(source As String, startPos As Integer) As String
+		Protected Function NextToken(source As String, startPos As Integer) As token
 		  // Get the next token in the given source code, starting at
 		  // the given char offset (as in Mid, first byte = 1).
 		  
@@ -2807,76 +2807,163 @@ Protected Module LanguageUtils
 		        Exit
 		      End If
 		    next
-		    Return Mid( source, i, j - i )
+		    Return New token( token.types.whitespace, Mid( source, i, j - i ) )
 		    
-		  elseif c = "'" then
+		  ElseIf c = "'" Then
 		    // comment from here to end of line
-		    Return Mid( source, i )
+		    Return New token( token.types.comment, Mid( source, i ) )
 		    
-		  elseif c = "/" and i < maxi and Mid( source, i+1, 1 ) = "/" then
+		  ElseIf c = "/" And i < maxi And Mid( source, i+1, 1 ) = "/" Then
 		    // comment from here to end of line
-		    Return Mid( source, i )
+		    Return New token( token.types.comment, Mid( source, i ) )
 		    
-		  Elseif c = "R" And Mid( source, i, 3 ) = "Rem" _
+		  ElseIf c = "R" And Mid( source, i, 3 ) = "Rem" _
 		    And IsWhitespace( Mid( source, i+3, 1 ) ) Then
 		    // comment from here to end of line
-		    Return Mid( source, i )
+		    Return New token( token.types.comment, Mid( source, i ) )
 		    
-		  elseif c = """" then
+		  ElseIf c = """" Then
 		    // string literal
 		    j = i
-		    while j > 0 and j < maxi
+		    While j > 0 And j < maxi
 		      j = InStr( j+1, source, """" )
-		      if j = 0 then  // no more quotes found -- terminate at end of string
+		      If j = 0 Then  // no more quotes found -- terminate at end of string
 		        j = maxi
-		        exit
-		      end if
+		        Exit
+		      End If
 		      If Mid( source, j+1, 1 ) = """" Then
 		        j = j + 1   // doubled embedded quote -- skip it and continue
-		      else
-		        exit        // found the close quote; exit the loop
-		      end if
-		    wend
-		    Return Mid( source, i, j - i + 1 )
+		      Else
+		        Exit        // found the close quote; exit the loop
+		      End If
+		    Wend
+		    Return New token( token.types.String, Mid( source, i, j - i + 1 ) )
 		    
-		  elseif IsDigit( c ) or _
+		  ElseIf c = "\" And i < maxi And Mid( source, i+1, 1 ) = """" Then
+		    // string literal escape encoded
+		    // these CAN be multi lined ffs
+		    Dim buffer() As String
+		    j = i + 2
+		    Dim read As Integer = 2
+		    
+		    While j > 0 And j <= maxi
+		      Dim ch As String = Mid( source, j, 1 )
+		      
+		      read = read + 1
+		      
+		      If ch = "\" Then
+		        
+		        If j+1 > maxi Then
+		          Exit While
+		        Else
+		          Select Case Mid(source, j+1, 1)
+		          Case "n"
+		            buffer.append ChrB(&h0A)
+		            read = read + 1
+		            
+		          Case "t"
+		            buffer.append ChrB(&h09)
+		            read = read + 1
+		            
+		          Case "v"
+		            buffer.append ChrB(&h0b)
+		            read = read + 1
+		            
+		          Case "b"
+		            buffer.append ChrB(&h08)
+		            read = read + 1
+		            
+		          Case "f"
+		            buffer.append ChrB(&h0C)
+		            read = read + 1
+		            
+		          Case "a"
+		            buffer.append ChrB(&h07)
+		            read = read + 1
+		            
+		          Case "\"
+		            buffer.append "\"
+		            read = read + 1
+		            
+		          Case "?"
+		            buffer.append "?"
+		            read = read + 1
+		            
+		          Case "'"
+		            buffer.append "'"
+		            read = read + 1
+		            
+		          Case """"
+		            buffer.append """"
+		            read = read + 1
+		            
+		          Case "x" 
+		            // two char Hex
+		            buffer.append ChrB(Val("&h" + Mid(source, j + 2, 2)))
+		            j = j + 1
+		            read = read + 3
+		            
+		          Else
+		            buffer.append " "
+		            
+		          End Select
+		          j = j + 2
+		        End If
+		        
+		      ElseIf ch = """" Then
+		        Exit While
+		      Else
+		        buffer.append ch
+		        j = j + 1
+		        
+		      End If
+		      
+		    Wend
+		    
+		    Return New token( token.types.String, """" + Join(buffer,"") + """", read )
+		    
+		  ElseIf IsDigit( c ) Or _
 		    (c = "." And i < maxi And IsDigit( Mid( source, i+1, 1 ) )) Then
 		    // a number
 		    j = i + 1
-		    while j <= maxi
+		    Dim read As Integer
+		    
+		    While j <= maxi
 		      c = Mid( source, j, 1 )
 		      If c <> "." And Not IsDigit( c ) Then 
 		        Exit
 		      End If
 		      j = j + 1
-		    wend
-		    Return Mid( source, i, j - i )
+		      read = read  + 1
+		      
+		    Wend
+		    Return New token( token.types.number, Mid( source, i, j - i ) )
 		    
-		  Elseif InStr( "<>+-*/\^=.,():"+EndOfLine, c ) > 0 Then
+		  ElseIf InStr( "<>+-*/\^=.,():"+EndOfLine, c ) > 0 Then
 		    // an operator or paren 
 		    // currently all our operators are one character 
 		    // uh NO ! <= >= <> ????
 		    Dim nextC As String = Mid(source, i+1, 1) 
 		    If c = "<" And nextC = ">" Then
-		      Return c + nextC
-		    Elseif c = "<" And nextC = "=" Then
-		      Return c + nextC
-		    Elseif c = ">" And nextC = "=" then
-		      return c + nextC
+		      Return New token( token.types.operator, c + nextC, 2 )
+		    ElseIf c = "<" And nextC = "=" Then
+		      Return New token( token.types.operator, c + nextC, 2 )
+		    ElseIf c = ">" And nextC = "=" Then
+		      Return New token( token.types.operator,c + nextC, 2 )
 		    End If
 		    
-		    return c
+		    Return New token( token.types.operator, c )
 		    
-		  else
+		  Else
 		    // anything else -- grab to next delimiter
 		    j = FindAnyInStr( i+1, source, "<>""+-*/\^='.(), :"+ EndOfLine + WhiteSpaceChars)
 		    If j < 1 Then 
 		      j = maxi+1
 		    End If
-		    Return Mid( source, i, j - i )
-		  end if
+		    Return New token( token.types.unknown, Mid( source, i, j - i ) )
+		  End If
 		  
-		  break // should never get here -- all cases above return something
+		  Break // should never get here -- all cases above return something
 		End Function
 	#tag EndMethod
 
@@ -2886,6 +2973,7 @@ Protected Module LanguageUtils
 		    // Unit-test this module.
 		    
 		    UnitTestTokenize
+		    UnitTestTokenizeSource
 		    UnitTestFirstToken
 		    
 		    UnitTestBlockCloser
@@ -3086,37 +3174,39 @@ Protected Module LanguageUtils
 		  Dim out() As String
 		  Dim pos As Integer = 1
 		  Dim maxpos As Integer = sourceLine.Len
-		  Dim token As String
+		  Dim tk As token
 		  
 		  While pos <= maxpos
 		    
-		    token = NextToken( sourceLine, pos )
+		    tk = NextToken( sourceLine, pos )
 		    
-		    If token = "" Then 
+		    If tk.read = 0 Then 
 		      Return out
 		    End If
 		    
 		    If includeWhitespace = AllWhiteSpaceFlag Then // keep everything - white space or not
 		      
-		      out.Append token
+		      out.Append tk.stringValue
 		      
 		    ElseIf includeWhitespace = EndOfLineFlag Then
 		      
-		      If StringUtils.Contains(token, EndOfLine) Then // keep the end of lines
+		      If StringUtils.Contains(tk.stringValue, EndOfLine) Then // keep the end of lines
 		        out.Append EndOfLine
-		      ElseIf IsWhitespace(token) = False Then // keep no other white space
-		        out.Append token
+		      ElseIf IsWhitespace(tk.stringValue) = False Then // keep no other white space
+		        out.Append tk.stringValue
 		      End If
 		      
 		    ElseIf includeWhitespace = NoWhiteSpaceFlag Then
 		      
-		      If IsWhitespace(token) = False Then // no white space
-		        out.Append token
+		      If IsWhitespace(tk.stringValue) = False Then // no white space
+		        out.Append tk.stringValue
 		      End If
 		      
 		    End If
 		    
-		    pos = pos + token.Len
+		    //incorrect in the case there ws a \" encoded stringg as that may consume more bytes than it returns 
+		    // ie/ if it includes \xHEX then there imght be one byte returned but 4 bytes eaten !
+		    pos = pos + tk.read
 		    
 		  Wend
 		  
@@ -3126,35 +3216,50 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
-		Protected Function TokenizeSource(source As String, includeWhitespace As Integer = AllWhiteSpaceFlag) As String()
-		  // Break the source up into multiple lines.  Then tokenize each line
+		Protected Function TokenizeSource(source As String, includeWhitespace As Integer = AllWhiteSpaceFlag) As Token()
+		  // tokenize source is for tokenizing MULTIPLE LINES
 		  
-		  dim out( -1 ) as String
-		  dim lines( -1 ) as String
+		  Dim out() As token
+		  Dim pos As Integer = 1
+		  Dim maxpos As Integer = source.Len
+		  Dim tk As token
 		  
-		  lines = Split( ReplaceLineEndings(source, EndOfLine), EndOfLine)
+		  While pos <= maxpos
+		    
+		    tk = NextToken( source, pos )
+		    
+		    If tk.read = 0 Then 
+		      Return out
+		    End If
+		    
+		    If includeWhitespace = AllWhiteSpaceFlag Then // keep everything - white space or not
+		      
+		      out.Append tk
+		      
+		    ElseIf includeWhitespace = EndOfLineFlag Then
+		      
+		      If StringUtils.Contains(tk.stringValue, EndOfLine) Then // keep the end of lines
+		        out.Append New token(token.types.EndOfLine, EndOfLine)
+		      ElseIf IsWhitespace(tk.stringValue) = False Then // keep no other white space
+		        out.Append tk
+		      End If
+		      
+		    ElseIf includeWhitespace = NoWhiteSpaceFlag Then
+		      
+		      If IsWhitespace(tk.stringValue) = False Then // no white space
+		        out.Append tk
+		      End If
+		      
+		    End If
+		    
+		    //incorrect in the case there ws a \" encoded stringg as that may consume more bytes than it returns 
+		    // ie/ if it includes \xHEX then there imght be one byte returned but 4 bytes eaten !
+		    pos = pos + tk.read
+		    
+		  Wend
 		  
-		  If lines.ubound > 0 Then
-		    For i As Integer = 0 To lines.ubound - 1
-		      lines(i) = lines(i) + EndOfLine
-		    Next i
-		  End If
+		  Return out
 		  
-		  For i As Integer = 0 To lines.ubound
-		    
-		    Dim line As String 
-		    
-		    line = lines(i) 
-		    
-		    Dim temp() As String = LanguageUtils.TokenizeLine( line, includeWhitespace )
-		    
-		    For Each token As String In temp
-		      out.Append( token )
-		    Next token
-		    
-		  Next
-		  
-		  return out
 		End Function
 	#tag EndMethod
 
@@ -3767,6 +3872,28 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h21, CompatibilityFlags = TargetHasGUI
+		Private Sub UnitTestSourceTokenizerHelper(source As String, expected As String, includeWhitespace As Integer = AllWhiteSpaceFlag)
+		  // This is a helper function for UnitTestTokenize.  The source is just
+		  // plain RB source; "expected" is a string with vertical bars inserted
+		  // between the tokens.
+		  
+		  Dim tokens() As Token
+		  tokens = TokenizeSource( source, includeWhitespace )
+		  
+		  dim tokenstrs() as string
+		  For Each t As token In tokens
+		    tokenstrs.append t.stringvalue
+		  Next t
+		  
+		  Dim got As String = Join(tokenStrs, "|")
+		  
+		  DetailedErrorIf got <> expected, "Expected: " + expected + EndOfLine + "Got: " + got
+		  
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21, CompatibilityFlags = TargetHasGUI
 		Private Sub UnitTestTokenHelper(source As String, expected As String, includeWhitespace As Integer = AllWhiteSpaceFlag)
 		  // This is a helper function for UnitTestTokenize.  The source is just
 		  // plain RB source; "expected" is a string with vertical bars inserted
@@ -3816,6 +3943,31 @@ Protected Module LanguageUtils
 		  UnitTestTokenHelper "Property Width As Integer" + EndOfLine + "Get" + &u09 + EndOfLine + "#If forUseInIDEScript = False", "Property| |Width| |As| |Integer|" + EndOfLine + "|Get|" + &u09 + EndOfLine + "|#If| |forUseInIDEScript| |=| |False"
 		  
 		  UnitTestTokenHelper "if    foo   =   bar    then", "if|    |foo|   |=|   |bar|    |then"
+		  
+		  UnitTestTokenHelper "dim s as string = \""foo bar \n then", "dim| |s| |as| |string| |=| |""foo bar " + ChrB(10) + " then"""
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21, CompatibilityFlags = TargetHasGUI
+		Private Sub UnitTestTokenizeSource()
+		  #If debugbuild
+		    
+		    If True Then
+		      Dim source As String = "dim s as string = ""foo bar""" + EndOfLine + "dim i as integer" 
+		      Dim expected As String = "dim| |s| |as| |string| |=| |""foo bar""|" + EndOfLine + "|dim| |i| |as| |integer" 
+		      
+		      UnitTestSourceTokenizerHelper source, expected
+		    End If
+		    
+		    If True Then
+		      Dim source As String = "dim s as string = \""foo" + EndOfLine + "bar""" + EndOfLine + "dim i as integer" 
+		      Dim expected As String = "dim| |s| |as| |string| |=| |""foo" + EndOfLine + "bar""|" + EndOfLine + "|dim| |i| |as| |integer" 
+		      
+		      UnitTestSourceTokenizerHelper source, expected
+		    End If
+		    
+		  #EndIf
 		  
 		End Sub
 	#tag EndMethod
