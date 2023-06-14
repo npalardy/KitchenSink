@@ -1,7 +1,6 @@
 #tag Class
 Protected Class LocalVariable
-	#tag CompatibilityFlags = TargetHasGUI
-	#tag Method, Flags = &h0, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h0
 		Sub Constructor(varName As String, varType As String, line As Integer)
 		  name = varName
 		  type = VarType
@@ -257,7 +256,7 @@ Protected Class LocalVariable
 			Group="Behavior"
 			InitialValue=""
 			Type="string"
-			EditorType=""
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="requiresNew"

@@ -1,7 +1,6 @@
 #tag Module
 Protected Module StringUtils
-	#tag CompatibilityFlags = TargetHasGUI
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function Chop(s As String, charsToCut As Integer) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -14,7 +13,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function ChopB(s As String, bytesToCut As Integer) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -43,7 +42,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h0
 		Function Contains(extends s As String, what As String) As Boolean
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -68,7 +67,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h0
 		Function ContainsB(extends s As String, what As String) As Boolean
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -87,7 +86,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function ControlCharacters() As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -107,7 +106,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function Count(source As String, substr As String) As Integer
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -138,7 +137,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function CountB(source As String, substr As String) As Integer
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -169,7 +168,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function CountFieldsQuoted(src as string, sep as string) As Integer
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -207,7 +206,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function CountRegEx(s As String, pattern As String) As Integer
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -231,7 +230,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function DecimalSeparator() As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -248,7 +247,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function EditDistance(s1 As String, s2 As String) As Integer
 		  // Return the Levenshein distance, aka the edit distance,
 		  // between the two StringUtils.  That's the number of insertions,
@@ -335,7 +334,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, CompatibilityFlags = false
+	#tag Method, Flags = &h0, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetIOS and (Target64Bit))
 		Function EndsWith(extends s As String, withWhat As String) As Boolean
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -349,7 +348,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h0
 		Function EndsWithB(extends s As String, withWhat As String) As Boolean
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -363,7 +362,35 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h21
+		Private Sub ErrorIf(errCondition As Boolean, msg As String = "")
+		  // Unit testing code calls this function to check if an error has
+		  // occurred.  If so, report it to the user and then break into
+		  // the debugger so he can do something about it.
+		  
+		  If Not errCondition Then 
+		    Return
+		  End If
+		  
+		  If msg = "" Then
+		    msg = "Unit Test Failure :"
+		  End If
+		  
+		  #If DebugBuild
+		    //msg = msg + EndOfLine + EndOfLine _
+		    //+ "Click OK to drop into the debugger and examine the stack."
+		  #EndIf
+		  MsgBox msg
+		  
+		  
+		  Break  // OK, now look at the stack to see what went wrong!
+		  
+		  
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function Hash(s As String) As Integer
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -379,7 +406,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function HexB(s As String) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -421,7 +448,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function InStrReverse(startPos As Integer = - 1, source As String, substr As String) As Integer
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -451,7 +478,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function InStrReverseB(startPosB As Integer = - 1, source As String, substr As String) As Integer
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -483,7 +510,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h0
 		Function IsEmpty(extends s As String) As Boolean
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -496,7 +523,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function LTrim(source As String, charsToTrim As String) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -522,7 +549,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Sub Metaphone(source As String, ByRef outPrimary As String, ByRef outAlternate As String)
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1279,7 +1306,7 @@ Protected Module StringUtils
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h21, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h21
 		Private Function MIsVowel(source As String, atPos As Integer) As Boolean
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1292,7 +1319,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h21, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h21
 		Private Function MStringAt(source As String, start As Integer, length As Integer, paramArray args As String) As Boolean
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1343,7 +1370,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function NthFieldQuoted(src as string, sep as string, index as integer) As string
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1417,7 +1444,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function PadBoth(s as String, width as Integer, padding as String = " ") As string
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1447,7 +1474,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function PadLeft(s as String, width as Integer, padding as String = " ") As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1469,7 +1496,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function PadRight(s as String, width as Integer, padding as String = " ") As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1491,7 +1518,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function Remove(s As String, charSet As String = " ") As string
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1525,7 +1552,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function Repeat(s as String, repeatCount as Integer) As string
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1591,7 +1618,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function ReplaceRange(s As String, start As Integer, length As Integer, newText As String) As string
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1604,7 +1631,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function ReplaceRangeB(s As String, startB As Integer, lengthB As Integer, newText As String) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1618,7 +1645,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function Reverse(s As String) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1655,7 +1682,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function ReverseB(s As String) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1685,7 +1712,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function RTrim(source As String, charsToTrim As String) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1730,7 +1757,7 @@ Protected Module StringUtils
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function Soundex(s As String, stripPrefix As Boolean = true) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1791,7 +1818,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function SplitByLength(s As String, fieldWidth As Integer) As String()
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1822,7 +1849,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function SplitByLengthB(s As String, fieldWidth As Integer) As String()
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1853,7 +1880,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function SplitByRegEx(source As String, delimPattern As String) As String()
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1884,7 +1911,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function SplitToCDbl(source As String, delimiter As String = " ") As Double()
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1910,7 +1937,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function SplitToInt(source As String, delimiter As String = " ") As Integer()
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1935,7 +1962,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function SplitToVal(source As String, delimiter As String = " ") As Double()
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -1962,7 +1989,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function Sprintf(src as string, ParamArray data as Variant) As string
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -2091,7 +2118,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function SQLify(s As String) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -2105,7 +2132,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function Squeeze(s As String, charSet As String = " ") As string
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -2150,7 +2177,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h0
 		Function StartsWith(extends s As String, withWhat As String) As Boolean
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -2167,7 +2194,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h0
 		Function StartsWithB(extends s As String, withWhat As String) As Boolean
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -2181,7 +2208,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function ThousandsSeparator() As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
@@ -2198,7 +2225,7 @@ Protected Module StringUtils
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1, CompatibilityFlags = TargetHasGUI
+	#tag Method, Flags = &h1
 		Protected Function Trim(source As String, charsToTrim As String) As String
 		  #Pragma BackgroundTasks False
 		  #Pragma BoundsChecking False
