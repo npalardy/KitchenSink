@@ -1368,7 +1368,7 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Function CrackPropertyDeclaration(content as string, byref isShared as boolean, byref scope as string, byref propName as string, byref isNew as boolean, byref type as string, byref optionalDefault as string) As Boolean
+		Protected Function CrackPropertyDeclaration(content as string, byref isShared as boolean, byref scope as string, byref propName as string, byref isNew as boolean, byref type as string, byref optionalDefault as string, allowPROPERTY as boolean = false) As Boolean
 		  #If debugBuild
 		    Const debugThis = False
 		  #Else
@@ -1461,6 +1461,9 @@ Protected Module LanguageUtils
 		  //     GLOBAL 
 		  //   | namedObjectType 
 		  
+		  // optionally we permit the use of a style like
+		  //     Public PROPERTY foo As Integer
+		  // which, if you copy properties from the IDE, is what IT writes (which is wrong but ....)
 		  
 		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, LanguageUtils.NoWhiteSpaceFlag)
 		  
@@ -1499,7 +1502,9 @@ Protected Module LanguageUtils
 		  // if we got a private , global, public etc we can skip DIM / STATIC
 		  // we CAN have one but dont require it
 		  // if not then we need one or the other
-		  If scope = "" And ( tokens(0) <> kDIM And tokens(0) <> kSTATIC ) Then
+		  If allowPROPERTY And tokens(0) = kProperty Then
+		    tokens.Remove 0
+		  elseIf scope = "" And ( tokens(0) <> kDIM And tokens(0) <> kSTATIC ) Then
 		    // REQUIRES a DIM or STATIC 
 		    #If debugThis
 		      Break
@@ -4826,6 +4831,29 @@ Protected Module LanguageUtils
 		  // =======================
 		  
 		  // =======================
+		  // =======================
+		  // =======================
+		  // =======================
+		  // =======================
+		  If True Then
+		    // with the OPTIONAL "accept PROPERTY keywords OFF (the default) this fails !
+		    Dim src As String
+		    Dim isShared As Boolean
+		    Dim scope As String
+		    Dim propName As String
+		    Dim isNew As Boolean
+		    Dim type As String
+		    Dim optionalDefault As String
+		    
+		    
+		    src = "PROPERTY name as string"
+		    
+		    ErrorIf LanguageUtils.CrackPropertyDeclaration(src, isShared, scope, propName, isnew, type, optionalDefault) <> False
+		    
+		  End If
+		  // =======================
+		  
+		  // =======================
 		  If True Then
 		    Dim src As String
 		    Dim isShared As Boolean
@@ -4894,6 +4922,39 @@ Protected Module LanguageUtils
 		  End If
 		  // =======================
 		  
+		  If True Then
+		    Dim src As String
+		    Dim isShared As Boolean
+		    Dim scope As String
+		    Dim propName As String
+		    Dim isNew As Boolean
+		    Dim type As String
+		    Dim optionalDefault As String
+		    
+		    
+		    src = "PUBLIC PROPERTY name as string"
+		    
+		    ErrorIf LanguageUtils.CrackPropertyDeclaration(src, isShared, scope, propName, isnew, type, optionalDefault) <> False
+		    
+		  End If
+		  
+		  // =======================
+		  
+		  If True Then
+		    Dim src As String
+		    Dim isShared As Boolean
+		    Dim scope As String
+		    Dim propName As String
+		    Dim isNew As Boolean
+		    Dim type As String
+		    Dim optionalDefault As String
+		    
+		    
+		    src = "SHARED PUBLIC PROPERTY name as string"
+		    
+		    ErrorIf LanguageUtils.CrackPropertyDeclaration(src, isShared, scope, propName, isnew, type, optionalDefault) <> False
+		    
+		  End If
 		End Sub
 	#tag EndMethod
 
@@ -5890,6 +5951,84 @@ Protected Module LanguageUtils
 		    
 		  End If
 		  
+		  
+		  
+		  // =======================
+		  // =======================
+		  // =======================
+		  // =======================
+		  // =======================
+		  // =======================
+		  // =======================
+		  If True Then
+		    // with the OPTIONAL "accept PROPERTY keywords ON this WORKS !!!!!!!!!!!
+		    Dim src As String
+		    Dim isShared As Boolean
+		    Dim scope As String
+		    Dim propName As String
+		    Dim isNew As Boolean
+		    Dim type As String
+		    Dim optionalDefault As String
+		    
+		    
+		    src = "PROPERTY name as string"
+		    
+		    ErrorIf LanguageUtils.CrackPropertyDeclaration(src, isShared, scope, propName, isnew, type, optionalDefault, True) <> True
+		    
+		  End If
+		  // =======================
+		  
+		  // =======================
+		  If True Then
+		    Dim src As String
+		    Dim isShared As Boolean
+		    Dim scope As String
+		    Dim propName As String
+		    Dim isNew As Boolean
+		    Dim type As String
+		    Dim optionalDefault As String
+		    
+		    src = "PROPERTY name as string =""foo"""
+		    
+		    ErrorIf LanguageUtils.CrackPropertyDeclaration(src, isShared, scope, propName, isnew, type, optionalDefault, True) <> True
+		    
+		  End If
+		  // =======================
+		  
+		  // =======================
+		  If True Then
+		    Dim src As String
+		    Dim isShared As Boolean
+		    Dim scope As String
+		    Dim propName As String
+		    Dim isNew As Boolean
+		    Dim type As String
+		    Dim optionalDefault As String
+		    
+		    
+		    src = "PUBLIC PROPERTY name as string"
+		    
+		    ErrorIf LanguageUtils.CrackPropertyDeclaration(src, isShared, scope, propName, isnew, type, optionalDefault, True) <> True
+		    
+		  End If
+		  
+		  // =======================
+		  
+		  If True Then
+		    Dim src As String
+		    Dim isShared As Boolean
+		    Dim scope As String
+		    Dim propName As String
+		    Dim isNew As Boolean
+		    Dim type As String
+		    Dim optionalDefault As String
+		    
+		    
+		    src = "PUBLIC SHARED PROPERTY name as string"
+		    
+		    ErrorIf LanguageUtils.CrackPropertyDeclaration(src, isShared, scope, propName, isnew, type, optionalDefault, True) <> True
+		    
+		  End If
 		End Sub
 	#tag EndMethod
 
