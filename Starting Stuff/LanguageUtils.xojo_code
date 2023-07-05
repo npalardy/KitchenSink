@@ -481,7 +481,7 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Function CrackEnumDeclaration(content as string, byref attrs as string, byref scope as string, byref enumName as string, byref type as string) As Boolean
+		Protected Function CrackEnumDeclaration(content as string, byref attrs as string, byref scope as string, byref enumName as string, byref type as string, byref body as string) As Boolean
 		  #If debugBuild
 		    Const debugThis = False
 		  #Else
@@ -537,7 +537,13 @@ Protected Module LanguageUtils
 		  // ;
 		  // 
 		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, LanguageUtils.NoWhiteSpaceFlag)
+		  attrs = ""
+		  scope = ""
+		  enumName = "" 
+		  type = "" 
+		  body = ""
+		  
+		  Dim tokens() As String = LanguageUtils.TokenizeLine(content, LanguageUtils.EndOfLineFlag) // toss all whitespace EXCEPT end of line !
 		  
 		  // empty string ?
 		  If tokens.ubound < 0 Then 
@@ -685,16 +691,74 @@ Protected Module LanguageUtils
 		  // out of tokens ? 
 		  // we either got "enum foo as type"
 		  //            or "enum foo "
-		  If tokens.Ubound > -1 Then
+		  If tokens.Ubound < 0 Then
 		    #If debugThis
 		      Break
 		    #EndIf
-		    Return parseFailure
+		    Return parseSuccess // YAY !!!!!!!!!
 		  End If
 		  
-		  Return parseSuccess // YAY !!!!!!!!!
 		  
+		  // ok we expect an end of line
+		  // ( enum def <end of line> ) *
+		  // end enum <end of line>?
 		  
+		  If tokens(0) <> EndOfLine Then
+		    #If debugThis
+		      Break
+		    #EndIf
+		    Return parseFailure // there's more but its NOT end of line ?
+		  End If
+		  
+		  tokens.remove 0
+		  
+		  // out of tokens ? 
+		  If tokens.Ubound < 0 Then
+		    #If debugThis
+		      Break
+		    #EndIf
+		    Return parseFailure // booo !!!!!!!
+		  End If
+		  
+		  While tokens.ubound >= 0
+		    
+		    If tokens(0) = "End" Then
+		      If tokens.ubound >= 1 And tokens(1) = "Enum" Then
+		        tokens.remove 0 // End
+		        tokens.remove 0 // Enum
+		        Exit While
+		      End If
+		    Else
+		      body = body + tokens(0)
+		      tokens.remove 0
+		    End If
+		    
+		  Wend
+		  
+		  If tokens.Ubound < 0 Then
+		    #If debugThis
+		      Break
+		    #EndIf
+		    Return parseSuccess // YAY !!!!!!!
+		  End If
+		  
+		  If tokens(0) <> EndOfLine Then
+		    #If debugThis
+		      Break
+		    #EndIf
+		    Return parseFailure // there's more but its NOT end of line ?
+		  End If
+		  
+		  tokens.remove 0
+		  
+		  If tokens.Ubound < 0 Then
+		    #If debugThis
+		      Break
+		    #EndIf
+		    Return parseSuccess // YAY !!!!!!!
+		  End If
+		  
+		  Return parseFailure // there's more but its NOT end of line ?
 		  
 		End Function
 	#tag EndMethod
@@ -1920,6 +1984,7 @@ Protected Module LanguageUtils
 		  Dim mode As Integer = kIdentExpected
 		  Dim openBrackets As Integer
 		  Dim bounds_str As String
+		  Dim modifiers As String
 		  
 		  While tokens.count > 0
 		    
@@ -1929,13 +1994,21 @@ Protected Module LanguageUtils
 		      
 		    Case kIdentExpected
 		      
-		      If token = "ByRef" Or token = "ByVal" Or token = "Assigns" Or token = "Extends" Or token = "Optional" Or token = "ParamArray" Then
-		        // skip param modifier
+		      
+		      If token = "ByRef" Or token = "ByVal" Or token = "Optional" Or token = "ParamArray" Then
+		        // these arent important in method sigs
+		      ElseIf token = "Assigns" Or token = "Extends" Then
+		        If modifiers <> "" Then
+		          modifiers = modifiers + " "
+		        End If
+		        modifiers = modifiers + token
 		      Else
 		        outVars.Append New LocalVariable( token, "", lineNum )
-		        
 		        mode = kAsExpected
+		        outVars(UBound(outVars)).modifiers = modifiers
+		        modifiers = ""
 		      End If
+		      
 		      
 		    Case kAsExpected 
 		      
@@ -2024,7 +2097,9 @@ Protected Module LanguageUtils
 		      Dim default As String 
 		      
 		      Do 
-		        
+		        If IsComment(tokens(0)) Then
+		          Exit Do
+		        End If
 		        default =  default + tokens(0)
 		        tokens.remove 0
 		        
@@ -2035,7 +2110,9 @@ Protected Module LanguageUtils
 		      End If
 		      
 		      If tokens.count > 0 Then
-		        If tokens(0) = "," Then
+		        If IsComment(tokens(0)) Then
+		          tokens.remove 0
+		        ElseIf tokens(0) = "," Then
 		          tokens.remove 0
 		        ElseIf tokens(0) = ")" Then
 		          tokens.remove 0
@@ -2062,6 +2139,8 @@ Protected Module LanguageUtils
 		          outVars(i).type = "Integer"
 		        Case IsColor(outVars(i).default_value_str)
 		          outVars(i).type = "Color"
+		        Case IsUnicode(outVars(i).default_value_str)
+		          outVars(i).type = "String"
 		        Case IsBoolean(outVars(i).default_value_str)
 		          outVars(i).type = "Boolean"
 		        Case IsRealNumber(outVars(i).default_value_str)
@@ -2540,6 +2619,43 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Function IsUnicode(s as string) As boolean
+		  
+		  // ok has to start with &u and then be hex digits
+		  
+		  If s = "" Then 
+		    Return False
+		  End If
+		  
+		  If s.Trim = "" Then 
+		    Return False
+		  End If
+		  
+		  If Left(s,2) <> "&u" Then
+		    Return False
+		  End If
+		  
+		  Dim chars() As String = Split(s,"")
+		  chars.remove 0 // remove the &
+		  chars.remove 0 // remove the u
+		  
+		  // &u only ?
+		  If chars.Ubound < 0 Then
+		    Return False
+		  End If
+		  
+		  For Each c As String In chars
+		    If InStr("abcdef0123456789", c) < 1 Then
+		      Return False
+		    End If
+		  Next c
+		  
+		  Return True
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function IsVarDeclarationLine(line as String) As boolean
 		  // if the line only has 3 chars tand starts with DIM then it is
 		  
@@ -2557,6 +2673,11 @@ Protected Module LanguageUtils
 	#tag Method, Flags = &h1
 		Protected Function IsWhitespace(c As String) As Boolean
 		  // Return whether the first character of c is a whitespace character.
+		  
+		  If c.LenB <= 0 Then
+		    Return False
+		  End If
+		  
 		  
 		  return Asc(c) <= 32
 		  
@@ -2816,6 +2937,14 @@ Protected Module LanguageUtils
 
 	#tag Method, Flags = &h1
 		Protected Function NextToken(source As String, startPos As Integer) As token
+		  #If DebugBuild = false
+		    #Pragma BackgroundTasks False
+		    #Pragma BoundsChecking False
+		    #Pragma BreakOnExceptions False
+		    #Pragma NilObjectChecking False
+		    #Pragma StackOverflowChecking False
+		  #EndIf
+		  
 		  // Get the next token in the given source code, starting at
 		  // the given char offset (as in Mid, first byte = 1).
 		  
@@ -2823,30 +2952,103 @@ Protected Module LanguageUtils
 		  i = startPos
 		  maxi = Len( source )
 		  
+		  If i > maxi Then
+		    Return Nil
+		  End If
+		  
 		  Dim c As String
 		  c = Mid( source, i, 1 )
+		  Dim eolAnd As String = Mid( source, i, Len(EndOfLine.Android) )
+		  Dim eoliOS As String = Mid( source, i, Len(EndOfLine.iOS) )
+		  Dim eolmacOS As String = Mid( source, i, Len(EndOfLine.macOS) )
+		  Dim eolUnix As String = Mid( source, i, Len(EndOfLine.UNIX) )
+		  Dim eolWin As String = Mid( source, i, Len(EndOfLine.Windows) )
 		  
-		  If IsWhitespace(c) Then
+		  If eolAnd = EndOfLine.Android Then
+		    Return New token( token.types.EndOfLine, EndOfLine.Android)
+		    
+		  ElseIf eoliOS = EndOfLine.iOS Then
+		    Return New token( token.types.EndOfLine, EndOfLine.iOS)
+		    
+		  ElseIf eolmacOS = EndOfLine.macOS Then
+		    Return New token( token.types.EndOfLine, EndOfLine.macOS)
+		    
+		  ElseIf eolUnix = EndOfLine.UNIX Then
+		    Return New token( token.types.EndOfLine, EndOfLine.UNIX)
+		    
+		  ElseIf eolWin = EndOfLine.Windows Then
+		    Return New token( token.types.EndOfLine, EndOfLine.Windows)
+		    
+		  ElseIf IsWhitespace(c) Then
 		    // run of whitespace
 		    For j = i + 1 To maxi
+		      eolAnd = Mid( source, j, Len(EndOfLine.Android) )
+		      eoliOS = Mid( source, j, Len(EndOfLine.iOS) )
+		      eolmacOS = Mid( source, j, Len(EndOfLine.macOS) )
+		      eolUnix = Mid( source, j, Len(EndOfLine.UNIX) )
+		      eolWin = Mid( source, j, Len(EndOfLine.Windows) )
+		      If eolAnd = EndOfLine.Android Or eoliOS = EndOfLine.iOS _
+		        Or eolmacOS = EndOfLine.macOS Or eolUnix = EndOfLine.UNIX _
+		        Or eolWin = EndOfLine.Windows Then
+		        Exit
+		      End If
 		      If Not IsWhitespace( Mid( source, j, 1 ) ) Then 
 		        Exit
 		      End If
-		    next
+		    Next
+		    
 		    Return New token( token.types.whitespace, Mid( source, i, j - i ) )
 		    
 		  ElseIf c = "'" Then
 		    // comment from here to end of line
-		    Return New token( token.types.comment, Mid( source, i ) )
+		    For j = i + 1 To maxi
+		      eolAnd = Mid( source, j, Len(EndOfLine.Android) )
+		      eoliOS = Mid( source, j, Len(EndOfLine.iOS) )
+		      eolmacOS = Mid( source, j, Len(EndOfLine.macOS) )
+		      eolUnix = Mid( source, j, Len(EndOfLine.UNIX) )
+		      eolWin = Mid( source, j, Len(EndOfLine.Windows) )
+		      If eolAnd = EndOfLine.Android Or eoliOS = EndOfLine.iOS _
+		        Or eolmacOS = EndOfLine.macOS Or eolUnix = EndOfLine.UNIX _
+		        Or eolWin = EndOfLine.Windows Then
+		        Exit
+		      End If
+		    Next
+		    Return New token( token.types.comment, Mid( source, i , j - i ) )
 		    
 		  ElseIf c = "/" And i < maxi And Mid( source, i+1, 1 ) = "/" Then
 		    // comment from here to end of line
-		    Return New token( token.types.comment, Mid( source, i ) )
+		    For j = i + 1 To maxi
+		      eolAnd = Mid( source, j, Len(EndOfLine.Android) )
+		      eoliOS = Mid( source, j, Len(EndOfLine.iOS) )
+		      eolmacOS = Mid( source, j, Len(EndOfLine.macOS) )
+		      eolUnix = Mid( source, j, Len(EndOfLine.UNIX) )
+		      eolWin = Mid( source, j, Len(EndOfLine.Windows) )
+		      If eolAnd = EndOfLine.Android Or eoliOS = EndOfLine.iOS _
+		        Or eolmacOS = EndOfLine.macOS Or eolUnix = EndOfLine.UNIX _
+		        Or eolWin = EndOfLine.Windows Then
+		        Exit
+		      End If
+		    Next
+		    
+		    Return New token( token.types.comment, Mid( source, i , j - i) )
 		    
 		  ElseIf c = "R" And Mid( source, i, 3 ) = "Rem" _
 		    And IsWhitespace( Mid( source, i+3, 1 ) ) Then
 		    // comment from here to end of line
-		    Return New token( token.types.comment, Mid( source, i ) )
+		    For j = i + 1 To maxi
+		      eolAnd = Mid( source, j, Len(EndOfLine.Android) )
+		      eoliOS = Mid( source, j, Len(EndOfLine.iOS) )
+		      eolmacOS = Mid( source, j, Len(EndOfLine.macOS) )
+		      eolUnix = Mid( source, j, Len(EndOfLine.UNIX) )
+		      eolWin = Mid( source, j, Len(EndOfLine.Windows) )
+		      If eolAnd = EndOfLine.Android Or eoliOS = EndOfLine.iOS _
+		        Or eolmacOS = EndOfLine.macOS Or eolUnix = EndOfLine.UNIX _
+		        Or eolWin = EndOfLine.Windows Then
+		        Exit
+		      End If
+		    Next
+		    
+		    Return New token( token.types.comment, Mid( source, i , j - 1) )
 		    
 		  ElseIf c = """" Then
 		    // string literal
@@ -2998,6 +3200,8 @@ Protected Module LanguageUtils
 		  #If DebugBuild
 		    // Unit-test this module.
 		    
+		    UnitTestNextToken
+		    
 		    UnitTestTokenize
 		    UnitTestTokenizeSource
 		    UnitTestFirstToken
@@ -3019,8 +3223,10 @@ Protected Module LanguageUtils
 		    // UnitTestFindVarHelper gets tested as part of FindVarDecs
 		    UnitTestIsEndOfCodeBlock
 		    UnitTestIsHexNumber()
+		    UnitTestIsUnicode
 		    UnitTestIsIdent
 		    UnitTestIsInStringLiteral
+		    
 		    UnitTestMakeSignature
 		    
 		    UnitTestMakeSignatureForEvent
@@ -3118,7 +3324,7 @@ Protected Module LanguageUtils
 		    Return LanguageUtils.Scope.PublicScope
 		    
 		  Else
-		    assert False, CurrentMethodName + " got an invalid scope string"
+		    // assert False, CurrentMethodName + " got an invalid scope string"
 		    
 		    Return LanguageUtils.Scope.PublicScope
 		  End Select
@@ -3192,6 +3398,14 @@ Protected Module LanguageUtils
 
 	#tag Method, Flags = &h1
 		Protected Function TokenizeLine(sourceLine As String, includeWhitespace As Integer = AllWhiteSpaceFlag) As String()
+		  #If DebugBuild = False
+		    #Pragma BackgroundTasks False
+		    #Pragma BoundsChecking False
+		    #Pragma BreakOnExceptions False
+		    #Pragma NilObjectChecking False
+		    #Pragma StackOverflowChecking False
+		  #EndIf
+		  
 		  // Break the given line up into tokens.
 		  // If includeWhitespace = true, then include whitespace as well,
 		  // so the original line can be completely reconstructed.
@@ -3216,7 +3430,7 @@ Protected Module LanguageUtils
 		      
 		    ElseIf includeWhitespace = EndOfLineFlag Then
 		      
-		      If Contains(tk.stringValue, EndOfLine) Then // keep the end of lines
+		      If tk.tokentype = LanguageUtils.token.Types.EndOfLine Then // keep the end of lines
 		        out.Append EndOfLine
 		      ElseIf IsWhitespace(tk.stringValue) = False Then // keep no other white space
 		        out.Append tk.stringValue
@@ -3243,6 +3457,14 @@ Protected Module LanguageUtils
 
 	#tag Method, Flags = &h1
 		Protected Function TokenizeSource(source As String, includeWhitespace As Integer = AllWhiteSpaceFlag) As Token()
+		  #If DebugBuild = False
+		    #Pragma BackgroundTasks False
+		    #Pragma BoundsChecking False
+		    #Pragma BreakOnExceptions False
+		    #Pragma NilObjectChecking False
+		    #Pragma StackOverflowChecking False
+		  #EndIf
+		  
 		  // tokenize source is for tokenizing MULTIPLE LINES
 		  
 		  Dim out() As token
@@ -3258,14 +3480,18 @@ Protected Module LanguageUtils
 		      Return out
 		    End If
 		    
+		    // #If debugbuild
+		    // System.debuglog "token = [" + tk.stringvalue + "]"
+		    // #EndIf
+		    
 		    If includeWhitespace = AllWhiteSpaceFlag Then // keep everything - white space or not
 		      
 		      out.Append tk
 		      
 		    ElseIf includeWhitespace = EndOfLineFlag Then
 		      
-		      If Contains(tk.stringValue, EndOfLine) Then // keep the end of lines
-		        out.Append New token(token.types.EndOfLine, EndOfLine)
+		      If tk.tokentype = LanguageUtils.token.Types.EndOfLine Then // keep the end of lines
+		        out.Append tk
 		      ElseIf IsWhitespace(tk.stringValue) = False Then // keep no other white space
 		        out.Append tk
 		      End If
@@ -3568,8 +3794,8 @@ Protected Module LanguageUtils
 		  UnitTestFindVarHelper "Dim a(5),b(-1),c() As Color", "a:Color():5,b:Color():-1,c:Color():"
 		  
 		  UnitTestFindVarHelper "Private Sub Foo(bar as Integer, baz as String)", "bar:Integer,baz:String"
-		  UnitTestFindVarHelper "Function Foo(ByRef foo as Date, Assigns bar as Integer) as Boolean", "foo:Date,bar:Integer"
-		  UnitTestFindVarHelper "Attributes( asdfasdf ) Function Foo(ByRef foo as Date, Assigns bar as Integer) as string", "foo:Date,bar:Integer"
+		  UnitTestFindVarHelper "Function Foo(ByRef foo as Date, Assigns bar as Integer) as Boolean", "foo:Date,assigns bar:Integer"
+		  UnitTestFindVarHelper "Attributes( asdfasdf ) Function Foo(ByRef foo as Date, Assigns bar as Integer) as string", "foo:Date,assigns bar:Integer"
 		  
 		  UnitTestFindVarHelper "Private Sub Foo(bar() as Integer, baz(100) as String)", "bar:Integer():,baz:String():100"
 		  UnitTestFindVarHelper "Private Sub Foo(bar() as Integer, baz() as String)", "bar:Integer():,baz:String():"
@@ -3587,6 +3813,9 @@ Protected Module LanguageUtils
 		  UnitTestFindVarHelper "const a = &h090909", "a:integer"
 		  UnitTestFindVarHelper "const a = &b010101", "a:integer"
 		  UnitTestFindVarHelper "const a = &O070605", "a:integer"
+		  UnitTestFindVarHelper "const a = &u12345", "a:string"
+		  
+		  UnitTestFindVarHelper "const foo = 1 // this is a test ", "foo:integer"
 		  
 		  UnitTestFindVarHelper "Static d As New Date", "d:Date"
 		  UnitTestFindVarHelper "Var d As New Date", "d:Date"
@@ -3618,6 +3847,11 @@ Protected Module LanguageUtils
 		      got = got + ","
 		    End If
 		    
+		    
+		    If vars(i).modifiers <> "" Then
+		      got = got + vars(i).modifiers + " "
+		    End If
+		    
 		    got = got + vars(i).name + ":" + vars(i).type
 		    
 		    If vars(i).isarray Then
@@ -3626,8 +3860,7 @@ Protected Module LanguageUtils
 		    
 		  Next
 		  
-		  DetailedErrorIf got <> expected, "Vars found: " + got _
-		  + EndOfLine + "Expected: " + expected
+		  DetailedErrorIf got <> expected, "Vars found: " + got + EndOfLine + "Expected: " + expected
 		  
 		End Sub
 	#tag EndMethod
@@ -3780,6 +4013,22 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub UnitTestIsUnicode()
+		  
+		  ErrorIf IsUnicode("&u123") <> True
+		  ErrorIf IsUnicode("&uAA") <> True
+		  ErrorIf IsUnicode("&uaf") <> True
+		  
+		  ErrorIf IsUnicode("&u") <> False
+		  ErrorIf IsUnicode("") <> False
+		  ErrorIf IsUnicode("f") <> False
+		  ErrorIf IsUnicode("&") <> False
+		  ErrorIf IsUnicode("&uG") <> False
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub UnitTestMakeSignature()
 		  #If DebugBuild
 		    If True Then
@@ -3890,6 +4139,118 @@ Protected Module LanguageUtils
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub UnitTestNextToken()
+		  
+		  #If debugbuild
+		    
+		    If True Then
+		      // parse windows EOL properly on macOS ?
+		      Dim tk As LanguageUtils.token
+		      Dim src As String = EndOfLine.Windows + "123" 
+		      Dim start As Integer = 1
+		      
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.tokentype <> LanguageUtils.token.Types.EndOfLine Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.stringvalue <> "123" Then
+		        break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If (tk Is Nil) = False Then
+		        Break // probelm there should be no next token  !
+		      End If
+		      
+		    End If
+		    
+		    
+		    If True Then
+		      // parse macOS EOL properly on Windows ?
+		      Dim tk As LanguageUtils.token
+		      Dim src As String = EndOfLine.macOS + "123" 
+		      Dim start As Integer = 1
+		      
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.tokentype <> LanguageUtils.token.Types.EndOfLine Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.stringvalue <> "123" Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If (tk Is Nil) = False Then
+		        Break // probelm there should be no next token  !
+		      End If
+		      
+		    End If
+		    
+		    If True Then
+		      // parse whitespace + macOS EOL properly on Windows ?
+		      Dim tk As LanguageUtils.token
+		      Dim src As String = &u09 + " " + EndOfLine.macOS + "123" 
+		      Dim start As Integer = 1
+		      
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.stringvalue <> &u09 + " " Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.tokentype <> LanguageUtils.token.Types.EndOfLine Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.stringvalue <> "123" Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If (tk Is Nil) = False Then
+		        Break // probelm there should be no next token  !
+		      End If
+		      
+		    End If
+		    
+		  #EndIf
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub UnitTestPropertyDeclCracker()
 		  UnitTest_ValidPropertyDecls
 		  
@@ -3938,6 +4299,7 @@ Protected Module LanguageUtils
 
 	#tag Method, Flags = &h21
 		Private Sub UnitTestTokenize()
+		  
 		  UnitTestTokenHelper "if foo=bar then", "if| |foo|=|bar| |then"
 		  
 		  UnitTestTokenHelper "x = ""foo bar"" // this is a test", "x| |=| |""foo bar""| |// this is a test"
@@ -3966,7 +4328,7 @@ Protected Module LanguageUtils
 		  UnitTestTokenHelper " dim i as integer=1^2<>3>=4<=5^6<7>8" ," |dim| |i| |as| |integer|=|1|^|2|<>|3|>=|4|<=|5|^|6|<|7|>|8" 
 		  
 		  // runs of whitespaces coalesced properly ?
-		  UnitTestTokenHelper "Property Width As Integer" + EndOfLine + "Get" + &u09 + EndOfLine + "#If forUseInIDEScript = False", "Property| |Width| |As| |Integer|" + EndOfLine + "|Get|" + &u09 + EndOfLine + "|#If| |forUseInIDEScript| |=| |False"
+		  UnitTestTokenHelper "Property Width As Integer" + EndOfLine + "Get" + &u09 + EndOfLine + "#If forUseInIDEScript = False", "Property| |Width| |As| |Integer|" + EndOfLine + "|Get|" + &u09 + "|" + EndOfLine + "|#If| |forUseInIDEScript| |=| |False"
 		  
 		  UnitTestTokenHelper "if    foo   =   bar    then", "if|    |foo|   |=|   |bar|    |then"
 		  
@@ -3993,6 +4355,15 @@ Protected Module LanguageUtils
 		      UnitTestSourceTokenizerHelper source, expected
 		    End If
 		    
+		    
+		    If True Then
+		      Dim source As String = "dim s as string // comment one and does it matter' if we rem put more ?"
+		      Dim expected As String = "dim| |s| |as| |string| |// comment one and does it matter' if we rem put more ?"
+		      
+		      UnitTestSourceTokenizerHelper source, expected
+		    End If
+		    
+		    
 		  #EndIf
 		  
 		End Sub
@@ -4000,67 +4371,73 @@ Protected Module LanguageUtils
 
 	#tag Method, Flags = &h21
 		Private Sub UnitTest_InvalidEnumDeclarations()
-		  // if true blocks because they crate a new scope 
-		  // so vars are not carried from oe block to another :P
-		  
-		  // =================================================================
-		  // these should all work
-		  //
-		  // =================================================================
-		  
-		  If True Then
-		    Dim content As String
-		    Dim attrs As String
-		    Dim scope As String
-		    Dim enumName As String
-		    Dim type As String
+		  #If DebugBuild
+		    // if true blocks because they crate a new scope 
+		    // so vars are not carried from oe block to another :P
 		    
-		    content = "Enum"
+		    // =================================================================
+		    // these should all work
+		    //
+		    // =================================================================
 		    
-		    ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type) = True
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Enum"
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) = True
+		      
+		    End If
 		    
-		  End If
-		  
-		  If True Then
-		    Dim content As String
-		    Dim attrs As String
-		    Dim scope As String
-		    Dim enumName As String
-		    Dim type As String
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Enum Foo Uint8"
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) = True
+		      
+		    End If
 		    
-		    content = "Enum Foo Uint8"
 		    
-		    ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type) = True
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Private Enum Foo as"
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) = True
+		      
+		    End If
 		    
-		  End If
-		  
-		  
-		  If True Then
-		    Dim content As String
-		    Dim attrs As String
-		    Dim scope As String
-		    Dim enumName As String
-		    Dim type As String
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Attributes( bar  Enum Foo "
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) = True
+		      
+		    End If
 		    
-		    content = "Private Enum Foo as"
-		    
-		    ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type) = True
-		    
-		  End If
-		  
-		  If True Then
-		    Dim content As String
-		    Dim attrs As String
-		    Dim scope As String
-		    Dim enumName As String
-		    Dim type As String
-		    
-		    content = "Attributes( bar  Enum Foo "
-		    
-		    ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type) = True
-		    
-		  End If
-		  
+		  #EndIf
 		End Sub
 	#tag EndMethod
 
@@ -4960,80 +5337,127 @@ Protected Module LanguageUtils
 
 	#tag Method, Flags = &h21
 		Private Sub UnitTest_ValidEnumDeclarations()
-		  // if true blocks because they crate a new scope 
-		  // so vars are not carried from oe block to another :P
-		  
-		  // =================================================================
-		  // these should all work
-		  //
-		  // SUBS
-		  // =================================================================
-		  
-		  If True Then
-		    Dim content As String
-		    Dim attrs As String
-		    Dim scope As String
-		    Dim enumName As String
-		    Dim type As String
+		  #If debugbuild
+		    // if true blocks because they crate a new scope 
+		    // so vars are not carried from oe block to another :P
 		    
-		    content = "Enum Foo "
+		    // =================================================================
+		    // these should all work
+		    //
+		    // SUBS
+		    // =================================================================
 		    
-		    ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type) <> True
-		    ErrorIf attrs <> ""
-		    ErrorIf scope <> kScopePublic
-		    ErrorIf enumName <> "foo"
-		    ErrorIf type <> "Integer"
-		  End If
-		  
-		  If True Then
-		    Dim content As String
-		    Dim attrs As String
-		    Dim scope As String
-		    Dim enumName As String
-		    Dim type As String
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Enum Foo "
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) <> True
+		      ErrorIf attrs <> ""
+		      ErrorIf scope <> kScopePublic
+		      ErrorIf enumName <> "foo"
+		      ErrorIf type <> "Integer"
+		      ErrorIf body <> ""
+		    End If
 		    
-		    content = "Enum Foo as Uint8"
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Enum Foo as Uint8"
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) <> True
+		      ErrorIf attrs <> ""
+		      ErrorIf scope <> kScopePublic
+		      ErrorIf enumName <> "foo"
+		      ErrorIf type <> "Uint8"
+		      ErrorIf body <> ""
+		    End If
 		    
-		    ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type) <> True
-		    ErrorIf attrs <> ""
-		    ErrorIf scope <> kScopePublic
-		    ErrorIf enumName <> "foo"
-		    ErrorIf type <> "Uint8"
-		  End If
-		  
-		  
-		  If True Then
-		    Dim content As String
-		    Dim attrs As String
-		    Dim scope As String
-		    Dim enumName As String
-		    Dim type As String
 		    
-		    content = "Private Enum Foo "
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Private Enum Foo "
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) <> True
+		      ErrorIf attrs <> ""
+		      ErrorIf scope <> kScopePrivate
+		      ErrorIf enumName <> "foo"
+		      ErrorIf type <> "Integer"
+		      ErrorIf body <> ""
+		    End If
 		    
-		    ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type) <> True
-		    ErrorIf attrs <> ""
-		    ErrorIf scope <> kScopePrivate
-		    ErrorIf enumName <> "foo"
-		    ErrorIf type <> "Integer"
-		  End If
-		  
-		  If True Then
-		    Dim content As String
-		    Dim attrs As String
-		    Dim scope As String
-		    Dim enumName As String
-		    Dim type As String
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Attributes( bar ) Protected Enum Foo "
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) <> True
+		      ErrorIf attrs <> "bar"
+		      ErrorIf scope <> kScopeProtected
+		      ErrorIf enumName <> "foo"
+		      ErrorIf type <> "Integer"
+		      ErrorIf body <> ""
+		    End If
 		    
-		    content = "Attributes( bar ) Protected Enum Foo "
 		    
-		    ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type) <> True
-		    ErrorIf attrs <> "bar"
-		    ErrorIf scope <> kScopeProtected
-		    ErrorIf enumName <> "foo"
-		    ErrorIf type <> "Integer"
-		  End If
-		  
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Attributes( bar ) Protected Enum Foo " + EndOfLine + "bar" + EndOfLine + "baz = 123" + EndOfLine + "End Enum"
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) <> True
+		      ErrorIf attrs <> "bar"
+		      ErrorIf scope <> kScopeProtected
+		      ErrorIf enumName <> "foo"
+		      ErrorIf type <> "Integer"
+		      ErrorIf body <> "bar" + EndOfLine + "baz=123" + EndOfLine // note this WILL strip insignificant white space !!!!!!!!
+		    End If
+		    
+		    If True Then
+		      Dim content As String
+		      Dim attrs As String
+		      Dim scope As String
+		      Dim enumName As String
+		      Dim type As String
+		      Dim body As String
+		      
+		      content = "Enum Foo" + EndOfLine + "bar" + EndOfLine + "baz" + EndOfLine + "End Enum"
+		      
+		      ErrorIf LanguageUtils.CrackEnumDeclaration(content, attrs, scope, enumName, type, body) <> True
+		      ErrorIf attrs <> ""
+		      ErrorIf scope <> kScopePublic
+		      ErrorIf enumName <> "Foo"
+		      ErrorIf type <> "Integer"
+		      ErrorIf body <> "bar" + EndOfLine + "baz" + EndOfLine // note this WILL strip insignificant white space !!!!!!!!
+		    End If
+		    
+		  #EndIf
 		End Sub
 	#tag EndMethod
 

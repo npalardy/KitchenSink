@@ -165,76 +165,80 @@ Protected Module Security
 
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
-		  If True Then
+		  #If DebugBuild
 		    
-		    Dim length As Integer = 7
-		    Dim uppers As Integer = 2
-		    Dim lowers As Integer = 2
-		    Dim numbers As Integer = 2
-		    Dim symbols As Integer = 2
+		    If True Then
+		      
+		      Dim length As Integer = 7
+		      Dim uppers As Integer = 2
+		      Dim lowers As Integer = 2
+		      Dim numbers As Integer = 2
+		      Dim symbols As Integer = 2
+		      
+		      #Pragma BreakOnExceptions False
+		      Try
+		        Dim pwd As String 
+		        pwd = RandomPassword( length, uppers, lowers, numbers, symbols )
+		        Break
+		      Catch uoe As UnsupportedOperationException
+		        // this IS expected !
+		      End Try
+		      #pragma BreakOnExceptions default
+		    End If
 		    
-		    #Pragma BreakOnExceptions False
-		    Try
-		      Dim pwd As String 
-		      pwd = RandomPassword( length, uppers, lowers, numbers, symbols )
-		      Break
-		    Catch uoe As UnsupportedOperationException
-		      // this IS expected !
-		    End Try
-		    #pragma BreakOnExceptions default
-		  End If
-		  
-		  
-		  If True Then
 		    
-		    Dim length As Integer = 16
-		    Dim uppers As Integer = 2
-		    Dim lowers As Integer = 2
-		    Dim numbers As Integer = 2
-		    Dim symbols As Integer = 2
+		    If True Then
+		      
+		      Dim length As Integer = 16
+		      Dim uppers As Integer = 2
+		      Dim lowers As Integer = 2
+		      Dim numbers As Integer = 2
+		      Dim symbols As Integer = 2
+		      
+		      Dim pwd As String = RandomPassword( length, uppers, lowers, numbers, symbols )
+		      
+		      Dim resultLength As Integer 
+		      Dim resultUppers As Integer 
+		      Dim resultLowers As Integer
+		      Dim resultNumbers As Integer 
+		      Dim resultSymbols As Integer 
+		      
+		      CountChars(pwd, resultLength, resultUppers, resultLowers, resultNumbers, resultSymbols)
+		      
+		      debug.Assert resultLength >= length, CurrentMethodName + " length is wrong"
+		      debug.Assert resultUppers >= uppers, CurrentMethodName + " wrong # of uppers"
+		      debug.Assert resultLowers >= lowers, CurrentMethodName + " wrong # of lowers"
+		      debug.Assert resultNumbers >= numbers, CurrentMethodName + " wrong # of numbers"
+		      debug.Assert resultSymbols >= symbols, CurrentMethodName + " wrong # of symbols"
+		      
+		    End If
 		    
-		    Dim pwd As String = RandomPassword( length, uppers, lowers, numbers, symbols )
 		    
-		    Dim resultLength As Integer 
-		    Dim resultUppers As Integer 
-		    Dim resultLowers As Integer
-		    Dim resultNumbers As Integer 
-		    Dim resultSymbols As Integer 
+		    If True Then
+		      
+		      Dim pwd As String
+		      
+		      Dim pwdStrength As Integer = PasswordStrength( pwd )
+		      
+		      debug.Assert pwdStrength = 0, CurrentMethodName + " strength assesed wrong"
+		    End If
 		    
-		    CountChars(pwd, resultLength, resultUppers, resultLowers, resultNumbers, resultSymbols)
+		    If True Then
+		      
+		      Dim length As Integer = 20
+		      Dim uppers As Integer = 3
+		      Dim lowers As Integer = 3
+		      Dim numbers As Integer = 3
+		      Dim symbols As Integer = 3
+		      
+		      Dim pwd As String = RandomPassword( length, uppers, lowers, numbers, symbols )
+		      
+		      Dim pwdStrength As Integer = PasswordStrength( pwd )
+		      
+		      debug.Assert pwdStrength >= 150, CurrentMethodName + " strength assesed wrong"
+		    End If
 		    
-		    debug.Assert resultLength >= length, CurrentMethodName + " length is wrong"
-		    debug.Assert resultUppers >= uppers, CurrentMethodName + " wrong # of uppers"
-		    debug.Assert resultLowers >= lowers, CurrentMethodName + " wrong # of lowers"
-		    debug.Assert resultNumbers >= numbers, CurrentMethodName + " wrong # of numbers"
-		    debug.Assert resultSymbols >= symbols, CurrentMethodName + " wrong # of symbols"
-		    
-		  End If
-		  
-		  
-		  If True Then
-		    
-		    Dim pwd As String
-		    
-		    Dim pwdStrength As Integer = PasswordStrength( pwd )
-		    
-		    debug.Assert pwdStrength = 0, CurrentMethodName + " strength assesed wrong"
-		  End If
-		  
-		  If True Then
-		    
-		    Dim length As Integer = 20
-		    Dim uppers As Integer = 3
-		    Dim lowers As Integer = 3
-		    Dim numbers As Integer = 3
-		    Dim symbols As Integer = 3
-		    
-		    Dim pwd As String = RandomPassword( length, uppers, lowers, numbers, symbols )
-		    
-		    Dim pwdStrength As Integer = PasswordStrength( pwd )
-		    
-		    debug.Assert pwdStrength >= 150, CurrentMethodName + " strength assesed wrong"
-		  End If
+		  #EndIf
 		End Sub
 	#tag EndMethod
 

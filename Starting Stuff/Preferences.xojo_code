@@ -55,9 +55,9 @@ Protected Module Preferences
 
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
-		  Dim Logger As debug.logger = CurrentMethodName
 		  
 		  #If debugbuild
+		    Dim Logger As debug.logger = CurrentMethodName
 		    
 		    InitPrefsInstance
 		    
@@ -160,6 +160,7 @@ Protected Module Preferences
 		      debug.Assert  m_PrefsImplementation.HasKey(key) = false, CurrentMethodName + "found " + key + " but should not have"
 		      
 		    End If
+		    
 		  #EndIf
 		End Sub
 	#tag EndMethod

@@ -74,6 +74,56 @@ Protected Module MacOS
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Function FindFilesByBundleID(psBundleID As String) As FolderItem()
+		  Dim oResults() As FolderItem
+		  
+		  If (psBundleID = "") Then 
+		    Return oResults
+		  End If
+		  
+		  #If TargetMacOS Then
+		    //https://developer.apple.com/documentation/coreservices/1449290-lscopyapplicationurlsforbundleid?language=objc
+		    
+		    Declare Function LSCopyApplicationURLsForBundleIdentifier Lib "Foundation" (inBundleIdentifier As CFStringRef, outError As Ptr) As Ptr
+		    Declare Function NSArrayCount Lib "Foundation" Selector "count" (ptrToNSArray As Ptr) As UInteger
+		    Declare Function NSArrayObjectAtIndex Lib "Foundation" Selector "objectAtIndex:" (ptrToNSArray As Ptr, index As UInteger) As Ptr
+		    Declare Function CFURLCopyFileSystemPath Lib "Foundation" (anURL As Ptr, pathStyle As Int32) As CFStringRef
+		    
+		    Const kCFURLPOSIXPathStyle = 0
+		    Const kCFURLHFSPathStyle = 1
+		    
+		    Dim ptrToArray As Ptr = LSCopyApplicationURLsForBundleIdentifier(psBundleID, Nil)
+		    If (ptrToArray = Nil) Then Return Nil
+		    
+		    Dim iResultCount As UInteger = NSArrayCount(ptrToArray)
+		    If (iResultCount < 1) Then Return Nil
+		    
+		    For i As Integer = 0 To iResultCount - 1
+		      Dim ptrToNSURL As Ptr = NSArrayObjectAtIndex(ptrToArray, i)
+		      If (ptrToNSURL = Nil) Then Continue
+		      
+		      Dim sNativePath As String = CFURLCopyFileSystemPath(ptrToNSURL, kCFURLPOSIXPathStyle)
+		      
+		      Try
+		        Dim oResult As New FolderItem(sNativePath, FolderItem.PathTypeNative)
+		        oResults.Append(oResult)
+		      Catch UnsupportedFormatException
+		        'ignore
+		      End Try
+		    Next
+		    
+		    If (oResults.Ubound >= 0) Then 
+		      Return oResults
+		    End If
+		    Return oResults
+		  #EndIf
+		  
+		  Return oResults
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function IsProcessTranslated() As integer
 		  // The example function returns the value 0 for a native process, 1 for a translated process, and -1 when an error occurs.
 		  

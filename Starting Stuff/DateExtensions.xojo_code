@@ -110,7 +110,7 @@ Protected Module DateExtensions
 		  Case "PST", "PDT" //    ; Pacific:  - 8/ - 7
 		  Case "A", "B", "C", "D", "E", "F", "G", "H", "I" //          ; Military zones - "A"
 		  Case "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" //          ; through "I" And "K"
-		     //         ; through "Z", both UPPER & LOWER CASE
+		    //         ; through "Z", both UPPER & LOWER CASE
 		  Else
 		    Return False
 		  End Select
@@ -383,21 +383,22 @@ Protected Module DateExtensions
 		  // // above obsoletes https://www.rfc-wiki.org/wiki/RFC2822
 		  // // above obsoletes https://www.w3.org/Protocols/rfc822/#z26
 		  
-		  
-		  Dim tokens() As String = LanguageUtils.TokenizeLine( dateString )
-		  
-		  // date-time       =   [ day-Of-week "," ] date time [CFWS]
-		  // day-Of-week     =   ([FWS] day-name) / obs-day-Of-week
-		  // 
-		  // day-name        =   "Mon" / "Tue" / "Wed" / "Thu" / "Fri" / "Sat" / "Sun"
-		  // 
-		  Dim dayName As String
+		  Dim tokens() As String = LanguageUtils.TokenizeLine( Trim(dateString) )
 		  
 		  // folding white space ?
 		  // FWS             =   ([*WSP CRLF] 1*WSP) /  obs-FWS
 		  While tokens.Count > 0 And IsFoldingWhitespace(tokens(0))
 		    tokens.remove 0
 		  Wend
+		  
+		  // date-time       =   [ day-Of-week "," ] date time [CFWS]
+		  // day-Of-week     =   ([FWS] day-name) / obs-day-Of-week
+		  // 
+		  // day-name        =   "Mon" / "Tue" / "Wed" / "Thu" / "Fri" / "Sat" / "Sun"
+		  // 
+		  
+		  Dim dayName As String
+		  
 		  If tokens.count <= 0 Then
 		    // break
 		    Return Nil
@@ -690,7 +691,7 @@ Protected Module DateExtensions
 		  #If DebugBuild
 		    // TEST ZONE STRINGS
 		    Dim validList() As String = Array("UT", "GMT", "EST", "EDT", "CST", "CDT", "MST", "MDT", "PST", "PDT", _
-		     "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" )
+		    "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" )
 		    For Each tzStr As String In validList
 		      If isTZName(tzStr) <> True Then
 		        Break

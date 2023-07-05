@@ -394,18 +394,23 @@ Protected Module FolderitemExtensions
 
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
-		  Dim Logger As debug.logger = CurrentMethodName
-		  
-		  #If TargetMacOS
-		    Dim f As New folderitem("/Users/npalardy/Desktop/tabpanel.xojo_binary_project", FolderItem.PathTypeNative)
+		  #If DebugBuild
 		    
-		    Dim s As New Size
-		    s.Width = 80
-		    s.height = 80
-		    Dim p As picture 
-		    p = f.IconforFile(s)
+		    Dim Logger As debug.logger = CurrentMethodName
 		    
-		    #Pragma warning "Norm finish !"
+		    #If TargetMacOS
+		      Dim f As New folderitem("/Users/npalardy/Desktop/tabpanel.xojo_binary_project", FolderItem.PathTypeNative)
+		      
+		      Dim s As New Size
+		      s.Width = 80
+		      s.height = 80
+		      Dim p As picture 
+		      p = f.IconforFile(s)
+		      
+		      #Pragma warning "Norm finish !"
+		      
+		    #EndIf
+		    
 		    
 		  #EndIf
 		End Sub

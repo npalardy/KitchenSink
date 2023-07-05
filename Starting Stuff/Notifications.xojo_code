@@ -130,92 +130,96 @@ Protected Module Notifications
 
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
-		  Dim Logger As debug.logger = CurrentMethodName
-		  
-		  // test converting the regex to be a simple one
-		  If True Then
-		    Dim s As String = "foo.*"
+		  #If DebugBuild
 		    
-		    Dim result As String = ConvertToSimpleRegex(s)
+		    Dim Logger As debug.logger = CurrentMethodName
 		    
-		    // note the DOT (.) above needs to be matched LITERALLY hence it turns into \.
-		    // and the * means "anything"  which in a regex is ".*"
-		    // assert result = "\Qfoo.\E.*", CurrentMethodName + " did the wrong thing with a pattern"
-		    Debug.assert result = "foo\..*", CurrentMethodName + " did the wrong thing with a pattern"
-		  End If
-		  
-		  If True Then
-		    Dim s As String = "foo.*.bar.*"
+		    // test converting the regex to be a simple one
+		    If True Then
+		      Dim s As String = "foo.*"
+		      
+		      Dim result As String = ConvertToSimpleRegex(s)
+		      
+		      // note the DOT (.) above needs to be matched LITERALLY hence it turns into \.
+		      // and the * means "anything"  which in a regex is ".*"
+		      // assert result = "\Qfoo.\E.*", CurrentMethodName + " did the wrong thing with a pattern"
+		      Debug.assert result = "foo\..*", CurrentMethodName + " did the wrong thing with a pattern"
+		    End If
 		    
-		    Dim result As String = ConvertToSimpleRegex(s)
+		    If True Then
+		      Dim s As String = "foo.*.bar.*"
+		      
+		      Dim result As String = ConvertToSimpleRegex(s)
+		      
+		      // note the DOT (.) above needs to be matched LITERALLY hence it turns into \.
+		      // and the * means "anything"  which in a regex is ".*"
+		      // assert result = "\Qfoo.\E.*\Q.bar.\E.*", CurrentMethodName + " did the wrong thing with a pattern"
+		      Debug.assert result = "foo\..*\.bar\..*", CurrentMethodName + " did the wrong thing with a pattern"
+		      
+		    End If
 		    
-		    // note the DOT (.) above needs to be matched LITERALLY hence it turns into \.
-		    // and the * means "anything"  which in a regex is ".*"
-		    // assert result = "\Qfoo.\E.*\Q.bar.\E.*", CurrentMethodName + " did the wrong thing with a pattern"
-		    Debug.assert result = "foo\..*\.bar\..*", CurrentMethodName + " did the wrong thing with a pattern"
+		    If True Then
+		      Dim s As String = ".[]-^\?*+{}|$`&$+?#:!<=()"
+		      
+		      Dim result As String = ConvertToSimpleRegex(s)
+		      
+		      //assert result = "\Q.[]-^\?\E.*\Q+{}|$`&$+?#:!<=()\E", CurrentMethodName + " did the wrong thing with a pattern"
+		      Debug.assert result = "\.\[\]\-\^\\\?.*\+\{\}\|\$\`\&\$\+\?\#\:\!\<\=\(\)", CurrentMethodName + " did the wrong thing with a pattern"
+		    End If
 		    
-		  End If
-		  
-		  If True Then
-		    Dim s As String = ".[]-^\?*+{}|$`&$+?#:!<=()"
 		    
-		    Dim result As String = ConvertToSimpleRegex(s)
+		    If True Then
+		      Dim message As String = "foo.bar"
+		      Dim pattern As String = ConvertToSimpleRegex("foo.*")
+		      
+		      Debug.assert MessageIsA(pattern, message) = True, CurrentMethodName + " did match"
+		    End If
 		    
-		    //assert result = "\Q.[]-^\?\E.*\Q+{}|$`&$+?#:!<=()\E", CurrentMethodName + " did the wrong thing with a pattern"
-		    Debug.assert result = "\.\[\]\-\^\\\?.*\+\{\}\|\$\`\&\$\+\?\#\:\!\<\=\(\)", CurrentMethodName + " did the wrong thing with a pattern"
-		  End If
-		  
-		  
-		  If True Then
-		    Dim message As String = "foo.bar"
-		    Dim pattern As String = ConvertToSimpleRegex("foo.*")
+		    If True Then
+		      Dim message As String = "foo.bar.baz"
+		      Dim pattern As String = ConvertToSimpleRegex("foo.*.*")
+		      
+		      Debug.assert MessageIsA(pattern, message) = True, CurrentMethodName + " did match"
+		    End If
 		    
-		    Debug.assert MessageIsA(pattern, message) = True, CurrentMethodName + " did match"
-		  End If
-		  
-		  If True Then
-		    Dim message As String = "foo.bar.baz"
-		    Dim pattern As String = ConvertToSimpleRegex("foo.*.*")
+		    If True Then
+		      Dim message As String = "foo.bar.baz"
+		      Dim pattern As String = ConvertToSimpleRegex("foo.bar.*")
+		      
+		      Debug.assert MessageIsA(pattern, message) = True, CurrentMethodName + " did match"
+		    End If
 		    
-		    Debug.assert MessageIsA(pattern, message) = True, CurrentMethodName + " did match"
-		  End If
-		  
-		  If True Then
-		    Dim message As String = "foo.bar.baz"
-		    Dim pattern As String = ConvertToSimpleRegex("foo.bar.*")
 		    
-		    Debug.assert MessageIsA(pattern, message) = True, CurrentMethodName + " did match"
-		  End If
-		  
-		  
-		  If True Then
-		    Dim message As String = "bar.foo"
-		    Dim pattern As String = ConvertToSimpleRegex("foo.*")
+		    If True Then
+		      Dim message As String = "bar.foo"
+		      Dim pattern As String = ConvertToSimpleRegex("foo.*")
+		      
+		      Debug.assert MessageIsA(pattern, message) = False, CurrentMethodName + " did match"
+		    End If
 		    
-		    Debug.assert MessageIsA(pattern, message) = False, CurrentMethodName + " did match"
-		  End If
-		  
-		  If True Then
-		    Dim message As String = "bar.foo.baz"
-		    Dim pattern As String = ConvertToSimpleRegex("foo.*.*")
+		    If True Then
+		      Dim message As String = "bar.foo.baz"
+		      Dim pattern As String = ConvertToSimpleRegex("foo.*.*")
+		      
+		      Debug.assert MessageIsA(pattern, message) = False, CurrentMethodName + " did match"
+		    End If
 		    
-		    Debug.assert MessageIsA(pattern, message) = False, CurrentMethodName + " did match"
-		  End If
-		  
-		  If True Then
-		    Dim message As String = "foo.bar.baz"
-		    Dim pattern As String = ConvertToSimpleRegex("foo.baz.*")
+		    If True Then
+		      Dim message As String = "foo.bar.baz"
+		      Dim pattern As String = ConvertToSimpleRegex("foo.baz.*")
+		      
+		      Debug.assert MessageIsA(pattern, message) = False, CurrentMethodName + " did match"
+		    End If
 		    
-		    Debug.assert MessageIsA(pattern, message) = False, CurrentMethodName + " did match"
-		  End If
-		  
-		  If True Then
-		    Dim message As String = "foo.bar.baz"
-		    Dim pattern As String = ConvertToSimpleRegex("*")
+		    If True Then
+		      Dim message As String = "foo.bar.baz"
+		      Dim pattern As String = ConvertToSimpleRegex("*")
+		      
+		      Debug.assert MessageIsA(pattern, message) = True, CurrentMethodName + " did match"
+		    End If
 		    
-		    Debug.assert MessageIsA(pattern, message) = True, CurrentMethodName + " did match"
-		  End If
-		  
+		    
+		  #EndIf
 		End Sub
 	#tag EndMethod
 

@@ -49,6 +49,26 @@ Inherits Application
 		  
 		  MacOS.SetDockLabel("Fooey !")
 		  
+		  // Dim tos As ProperTextOutputStream = ProperTextOutputStream.Create( SpecialFolder.Desktop.child("foobar 123") )
+		  // 
+		  // Break
+		  // 
+		  // tos.WriteLine "123"
+		  // 
+		  // Break
+		  // 
+		  // tos = Nil
+		  // 
+		  // tos = ProperTextOutputStream.Create( SpecialFolder.Desktop.child("foobar 123") )
+		  // 
+		  // Break
+		  // 
+		  // tos.WriteLine "abc123456789"
+		  // 
+		  // Break
+		  // 
+		  // tos = Nil
+		  // 
 		  
 		End Sub
 	#tag EndEvent

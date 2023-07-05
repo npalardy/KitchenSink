@@ -43,6 +43,7 @@ Module=Diff;Starting Stuff/Diff.xojo_code;&h000000004F4C6FFF;&h000000007196DFFF;
 Module=MacOS;Starting Stuff/MacOS.xojo_code;&h000000000EA4DFFF;&h000000007196DFFF;false
 Module=WindowsOS;Starting Stuff/WindowsOS.xojo_code;&h000000006414BFFF;&h000000007196DFFF;false
 Class=ProperTextInputStream;Starting Stuff/ProperTextInputStream.xojo_code;&h0000000054500FFF;&h000000007196DFFF;false
+Class=ProperTextOutputStream;Starting Stuff/ProperTextOutputStream.xojo_code;&h000000001981B7FF;&h000000007196DFFF;false
 Module=PopupMenuExtensions;Starting Stuff/PopupMenuExtensions.xojo_code;&h000000001FC937FF;&h000000007196DFFF;false
 Module=TextAreaExtensions;Starting Stuff/TextAreaExtensions.xojo_code;&h000000001A4A4FFF;&h000000007196DFFF;false
 Module=IntrospectionExtensions;Starting Stuff/IntrospectionExtensions.xojo_code;&h000000005A6F97FF;&h000000007196DFFF;false

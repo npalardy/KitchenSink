@@ -324,173 +324,174 @@ Protected Module Diff
 
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
-		  Dim Logger As debug.logger = CurrentMethodName
-		  
-		  
-		  // Dim diff As New DiffParser
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    // test all changes
-		    a = ReplaceAll("a,b,c,d,e,f,g,h,i,j,k,l", ",", &u0A)
-		    b = ReplaceAll("0,1,2,3,4,5,6,7,8,9", ",", &u0A)
-		    
-		    Dim result As String = Diff.DiffText(a, b, False, False, False)
-		    Assert( result = "12.10.0.0*", "all-changes test failed.")
-		    logger.log("all-changes test passed.")
-		    
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // test all same
-		    a = ReplaceAll("a,b,c,d,e,f,g,h,i,j,k,l", ",", &u0A)
-		    b = a
-		    Dim result As String 
-		    result = Diff.DiffText(a, b, False, False, False) 
-		    Assert( Diff.DiffText(a, b, False, False, False) = "", "all-same test failed.")
-		    logger.log("all-same test passed.")
-		    
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // test snake
-		    a = ReplaceAll("a,b,c,d,e,f", ",", &u0A)
-		    b = ReplaceAll("b,c,d,e,f,x",",",&u0A)
-		    Dim result As String 
-		    result = Diff.DiffText(a, b, False, False, False)
-		    Assert( result = "1.0.0.0*0.1.6.5*","snake test failed.")
-		    logger.log("snake test passed.")
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // 2002.09.20 - repro
-		    a = ReplaceAll("c1,a,c2,b,c,d,e,g,h,i,j,c3,k,l",",",&u0A)
-		    b = ReplaceAll("C1,a,C2,b,c,d,e,I1,e,g,h,i,j,C3,k,I2,l",",",&u0A)
-		    Dim result As String 
-		    result = Diff.DiffText(a, b, False, False, False)
-		    Assert( result = "1.1.0.0*1.1.2.2*0.2.7.7*1.1.11.13*0.1.13.15*","repro20020920 test failed.")
-		    logger.log("repro20020920 test passed.")
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // 2003.02.07 - repro
-		    a = ReplaceAll("F",",",&u0A)
-		    b = ReplaceAll("0,F,1,2,3,4,5,6,7",",",&u0A)
-		    Dim result As String 
-		    result = Diff.DiffText(a, b, False, False, False)
-		    Assert( result = "0.1.0.0*0.7.1.2*", "repro20030207 test failed.")
-		    logger.log("repro20030207 test passed.")
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // Muegel - repro
-		    a = "HELLO" + &u0a + "WORLD"
-		    b = &u0a+&u0a+"hello"+&u0a+&u0a+&u0a+&u0a+"world"+&u0a
-		    Dim result As String 
-		    result = Diff.DiffText(a, b, False, False, False) 
-		    Assert( result = "2.8.0.0*", "repro20030409 test failed.")
-		    logger.log("repro20030409 test passed.")
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // test some differences
-		    a = ReplaceAll("a,b,-,c,d,e,f,f",",",&u0A)
-		    b = ReplaceAll("a,b,x,c,e,f",",",&u0A)
-		    Dim result As String 
-		    result = Diff.DiffText(a, b, False, False, False)
-		    Assert( result = "1.1.2.2*1.0.4.4*1.0.7.6*", "some-changes test failed.")
-		    logger.log("some-changes test passed.")
-		    
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // test one change within long chain of repeats
-		    a = ReplaceAll("a,a,a,a,a,a,a,a,a,a",",",&u0A)
-		    b = ReplaceAll("a,a,a,a,-,a,a,a,a,a",",",&u0A)
-		    Dim result As String
-		    result = Diff.DiffText(a, b, False, False, False)
-		    Assert( result = "0.1.4.4*1.0.9.10*", "long chain of repeats test failed.")
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // test snake but with case ignored
-		    a = ReplaceAll("A,B,C,D,E,F", ",", &u0A)
-		    b = ReplaceAll("b,c,d,e,f,x",",",&u0A)
-		    Dim result As String
-		    result = Diff.DiffText(a, b, False, False, True)
-		    Assert( result = "1.0.0.0*0.1.6.5*","snake test failed.")
-		    logger.log("snake test passed.")
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // test snake but with spaces trimmed & ignore case
-		    a = ReplaceAll(" A, B ,C , D ,E , F ", ",", &u0A)
-		    b = ReplaceAll("b,c,d,e,f,x",",",&u0A)
-		    Dim result As String
-		    result = Diff.DiffText(a, b, True, False, True)
-		    Assert( result = "1.0.0.0*0.1.6.5*","snake test failed.")
-		    logger.log("snake test passed.")
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
-		    
-		    // test with ignoring spaces & ignore case
-		    a = ReplaceAll("A A,B B,C C,D D,E E,F F", ",", &u0A)
-		    b = ReplaceAll("bb,cc,dd,ee,ff,xx",",",&u0A)
-		    Dim result As String 
-		    result = Diff.DiffText(a, b, False, True, True)
-		    Assert( result = "1.0.0.0*0.1.6.5*","snake test failed.")
-		    logger.log("snake test passed.")
-		    
-		  End If
-		  
-		  If True Then
-		    Dim a As String
-		    Dim b As String
+		  #If debugbuild
+		    Dim Logger As debug.logger = CurrentMethodName
 		    
 		    
-		    a = "this is a test"
-		    b = "this is a test" + EndOfLine + "added line"
-		    Dim result As String 
-		    result = Diff.DiffText(a, b, False, False, False)
-		    // if I read this right this should be 0.1.1.1
-		    // deleted 0 lines starting at 1       ^   ^
-		    // inserted 1 line starting at 1         ^   ^
-		  End If
-		  
-		  logger.log("End.")
-		  
-		  
+		    // Dim diff As New DiffParser
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      // test all changes
+		      a = ReplaceAll("a,b,c,d,e,f,g,h,i,j,k,l", ",", &u0A)
+		      b = ReplaceAll("0,1,2,3,4,5,6,7,8,9", ",", &u0A)
+		      
+		      Dim result As String = Diff.DiffText(a, b, False, False, False)
+		      Assert( result = "12.10.0.0*", "all-changes test failed.")
+		      logger.log("all-changes test passed.")
+		      
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // test all same
+		      a = ReplaceAll("a,b,c,d,e,f,g,h,i,j,k,l", ",", &u0A)
+		      b = a
+		      Dim result As String 
+		      result = Diff.DiffText(a, b, False, False, False) 
+		      Assert( Diff.DiffText(a, b, False, False, False) = "", "all-same test failed.")
+		      logger.log("all-same test passed.")
+		      
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // test snake
+		      a = ReplaceAll("a,b,c,d,e,f", ",", &u0A)
+		      b = ReplaceAll("b,c,d,e,f,x",",",&u0A)
+		      Dim result As String 
+		      result = Diff.DiffText(a, b, False, False, False)
+		      Assert( result = "1.0.0.0*0.1.6.5*","snake test failed.")
+		      logger.log("snake test passed.")
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // 2002.09.20 - repro
+		      a = ReplaceAll("c1,a,c2,b,c,d,e,g,h,i,j,c3,k,l",",",&u0A)
+		      b = ReplaceAll("C1,a,C2,b,c,d,e,I1,e,g,h,i,j,C3,k,I2,l",",",&u0A)
+		      Dim result As String 
+		      result = Diff.DiffText(a, b, False, False, False)
+		      Assert( result = "1.1.0.0*1.1.2.2*0.2.7.7*1.1.11.13*0.1.13.15*","repro20020920 test failed.")
+		      logger.log("repro20020920 test passed.")
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // 2003.02.07 - repro
+		      a = ReplaceAll("F",",",&u0A)
+		      b = ReplaceAll("0,F,1,2,3,4,5,6,7",",",&u0A)
+		      Dim result As String 
+		      result = Diff.DiffText(a, b, False, False, False)
+		      Assert( result = "0.1.0.0*0.7.1.2*", "repro20030207 test failed.")
+		      logger.log("repro20030207 test passed.")
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // Muegel - repro
+		      a = "HELLO" + &u0a + "WORLD"
+		      b = &u0a+&u0a+"hello"+&u0a+&u0a+&u0a+&u0a+"world"+&u0a
+		      Dim result As String 
+		      result = Diff.DiffText(a, b, False, False, False) 
+		      Assert( result = "2.8.0.0*", "repro20030409 test failed.")
+		      logger.log("repro20030409 test passed.")
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // test some differences
+		      a = ReplaceAll("a,b,-,c,d,e,f,f",",",&u0A)
+		      b = ReplaceAll("a,b,x,c,e,f",",",&u0A)
+		      Dim result As String 
+		      result = Diff.DiffText(a, b, False, False, False)
+		      Assert( result = "1.1.2.2*1.0.4.4*1.0.7.6*", "some-changes test failed.")
+		      logger.log("some-changes test passed.")
+		      
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // test one change within long chain of repeats
+		      a = ReplaceAll("a,a,a,a,a,a,a,a,a,a",",",&u0A)
+		      b = ReplaceAll("a,a,a,a,-,a,a,a,a,a",",",&u0A)
+		      Dim result As String
+		      result = Diff.DiffText(a, b, False, False, False)
+		      Assert( result = "0.1.4.4*1.0.9.10*", "long chain of repeats test failed.")
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // test snake but with case ignored
+		      a = ReplaceAll("A,B,C,D,E,F", ",", &u0A)
+		      b = ReplaceAll("b,c,d,e,f,x",",",&u0A)
+		      Dim result As String
+		      result = Diff.DiffText(a, b, False, False, True)
+		      Assert( result = "1.0.0.0*0.1.6.5*","snake test failed.")
+		      logger.log("snake test passed.")
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // test snake but with spaces trimmed & ignore case
+		      a = ReplaceAll(" A, B ,C , D ,E , F ", ",", &u0A)
+		      b = ReplaceAll("b,c,d,e,f,x",",",&u0A)
+		      Dim result As String
+		      result = Diff.DiffText(a, b, True, False, True)
+		      Assert( result = "1.0.0.0*0.1.6.5*","snake test failed.")
+		      logger.log("snake test passed.")
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      // test with ignoring spaces & ignore case
+		      a = ReplaceAll("A A,B B,C C,D D,E E,F F", ",", &u0A)
+		      b = ReplaceAll("bb,cc,dd,ee,ff,xx",",",&u0A)
+		      Dim result As String 
+		      result = Diff.DiffText(a, b, False, True, True)
+		      Assert( result = "1.0.0.0*0.1.6.5*","snake test failed.")
+		      logger.log("snake test passed.")
+		      
+		    End If
+		    
+		    If True Then
+		      Dim a As String
+		      Dim b As String
+		      
+		      
+		      a = "this is a test"
+		      b = "this is a test" + EndOfLine + "added line"
+		      Dim result As String 
+		      result = Diff.DiffText(a, b, False, False, False)
+		      // if I read this right this should be 0.1.1.1
+		      // deleted 0 lines starting at 1       ^   ^
+		      // inserted 1 line starting at 1         ^   ^
+		    End If
+		    
+		    logger.log("End.")
+		    
+		  #endif
 		End Sub
 	#tag EndMethod
 

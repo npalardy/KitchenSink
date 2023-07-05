@@ -25,7 +25,11 @@ Protected Module TextOutputStreamExtensions
 
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
-		  Dim Logger As debug.logger = CurrentMethodName
+		  #If DebugBuild
+		    
+		    Dim Logger As debug.logger = CurrentMethodName
+		    
+		  #EndIf
 		End Sub
 	#tag EndMethod
 

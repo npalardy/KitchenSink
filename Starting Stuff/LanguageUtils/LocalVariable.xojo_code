@@ -165,6 +165,10 @@ Protected Class LocalVariable
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
+		modifiers As string
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
 		name As String
 	#tag EndProperty
 

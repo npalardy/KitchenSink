@@ -51,144 +51,146 @@ Protected Module ArrayExtensions
 
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
-		  If True Then
-		    Dim array1() As String
-		    Dim array2() As String = Array ("123")
+		  #If DebugBuild
+		    If True Then
+		      Dim array1() As String
+		      Dim array2() As String = Array ("123")
+		      
+		      array1.Append array2
+		      
+		      Debug.assert array1.Ubound = 0, CurrentMethodName + " got wrong count"
+		      Debug.assert array1(0) = "123", CurrentMethodName + " got wrong item"
+		      
+		    End If
 		    
-		    array1.Append array2
+		    If True Then
+		      Dim array1() As String
+		      Dim array2() As String = Array ("123")
+		      
+		      array2.Append array1
+		      
+		      Debug.assert array2.Ubound = 0, CurrentMethodName + " got wrong count"
+		      Debug.assert array2(0) = "123", CurrentMethodName + " got wrong item"
+		      
+		    End If
 		    
-		    Debug.assert array1.Ubound = 0, CurrentMethodName + " got wrong count"
-		    Debug.assert array1(0) = "123", CurrentMethodName + " got wrong item"
+		    If True Then
+		      Dim array1() As String
+		      Dim array2() As String = Array ("123")
+		      
+		      array1.Append "prefix " , array2
+		      
+		      Debug.assert array1.Ubound = 0, CurrentMethodName + " got wrong count"
+		      Debug.assert array1(0) = "prefix 123", CurrentMethodName + " got wrong item"
+		      
+		    End If
 		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String
-		    Dim array2() As String = Array ("123")
+		    If True Then
+		      Dim array1() As String
+		      Dim array2() As String = Array ("123")
+		      
+		      array2.Append "prefix" , array1
+		      
+		      // we add NOTHING as array1 is empty !!!!!!!
+		      Debug.assert array2.Ubound = 0, CurrentMethodName + " got wrong count"
+		      Debug.assert array2(0) = "123", CurrentMethodName + " got wrong item"
+		      
+		    End If
 		    
-		    array2.Append array1
 		    
-		    Debug.assert array2.Ubound = 0, CurrentMethodName + " got wrong count"
-		    Debug.assert array2(0) = "123", CurrentMethodName + " got wrong item"
+		    // slice tests
+		    If True Then
+		      Dim array1() As String = Array ("123")
+		      Dim array2() As String = array1.Slice(1,1)
+		      
+		      // array2 should be empty
+		      Debug.assert array2.Ubound < 0, CurrentMethodName + " got wrong count"
+		      
+		    End If
 		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String
-		    Dim array2() As String = Array ("123")
+		    If True Then
+		      Dim array1() As String = Array ("123")
+		      Dim array2() As String = array1.Slice(0,1)
+		      
+		      // array2 should have 1 element that is a copy of array1
+		      Debug.assert array2.Ubound = 0, CurrentMethodName + " got wrong count"
+		      Debug.assert array2(0) = array1(0), CurrentMethodName + " got wrong value"
+		      
+		    End If
 		    
-		    array1.Append "prefix " , array2
+		    If True Then
+		      Dim array1() As String = Array ("123" , "234", "345", "456" )
+		      Dim array2() As String = array1.Slice(1,2)
+		      
+		      // array2 should have 2 elements that is a copy of array1(1) and array1(2)
+		      Debug.assert array2.Ubound = 1, CurrentMethodName + " got wrong count"
+		      Debug.assert array2(0) = array1(1), CurrentMethodName + " got wrong value"
+		      Debug.assert array2(1) = array1(2), CurrentMethodName + " got wrong value"
+		      
+		    End If
 		    
-		    Debug.assert array1.Ubound = 0, CurrentMethodName + " got wrong count"
-		    Debug.assert array1(0) = "prefix 123", CurrentMethodName + " got wrong item"
+		    If True Then
+		      Dim array1() As String = Array ("123" , "234", "345", "456" )
+		      Dim array2() As String = array1.Slice(2,2)
+		      
+		      // array2 should have 2 elements that is a copy of array1(2) and array1(3)
+		      Debug.assert array2.Ubound = 1, CurrentMethodName + " got wrong count"
+		      Debug.assert array2(0) = array1(2), CurrentMethodName + " got wrong value"
+		      Debug.assert array2(1) = array1(3), CurrentMethodName + " got wrong value"
+		      
+		    End If
 		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String
-		    Dim array2() As String = Array ("123")
+		    If True Then
+		      Dim array1() As String = Array ("123" , "234", "345", "456" )
+		      Dim array2() As String = array1.Slice(-1,-1)
+		      
+		      // array2 should have 4 elements that are copies of array1
+		      Debug.assert array2.Ubound = array1.Ubound, CurrentMethodName + " got wrong count"
+		      Debug.assert array2(0) = array1(0), CurrentMethodName + " got wrong value"
+		      Debug.assert array2(1) = array1(1), CurrentMethodName + " got wrong value"
+		      Debug.assert array2(2) = array1(2), CurrentMethodName + " got wrong value"
+		      Debug.assert array2(3) = array1(3), CurrentMethodName + " got wrong value"
+		      
+		    End If
 		    
-		    array2.Append "prefix" , array1
+		    If True Then
+		      Dim array1() As String = Array ("123" , "234", "345", "456" )
+		      Dim array2() As String = array1.Slice(1,-1)
+		      
+		      // array2 should have 3 elements that are copies of array1
+		      Debug.assert array2.Ubound = 2, CurrentMethodName + " got wrong count"
+		      Debug.assert array2(0) = array1(1), CurrentMethodName + " got wrong value"
+		      Debug.assert array2(1) = array1(2), CurrentMethodName + " got wrong value"
+		      Debug.assert array2(2) = array1(3), CurrentMethodName + " got wrong value"
+		      
+		    End If
 		    
-		    // we add NOTHING as array1 is empty !!!!!!!
-		    Debug.assert array2.Ubound = 0, CurrentMethodName + " got wrong count"
-		    Debug.assert array2(0) = "123", CurrentMethodName + " got wrong item"
+		    If True Then
+		      Dim array1() As String
+		      array1.append "123" , "234", "345", "456" 
+		      Dim array2() As String = array1.Slice(1,-1)
+		      
+		      // array2 should have 3 elements that are copies of array1
+		      Debug.assert array2.Ubound = 2, CurrentMethodName + " got wrong count"
+		      Debug.assert array2(0) = array1(1), CurrentMethodName + " got wrong value"
+		      Debug.assert array2(1) = array1(2), CurrentMethodName + " got wrong value"
+		      Debug.assert array2(2) = array1(3), CurrentMethodName + " got wrong value"
+		      
+		    End If
 		    
-		  End If
-		  
-		  
-		  // slice tests
-		  If True Then
-		    Dim array1() As String = Array ("123")
-		    Dim array2() As String = array1.Slice(1,1)
+		    If True Then
+		      Dim array1() As String
+		      array1.append "123" , "234", "345", "456" 
+		      Dim array2() As String 
+		      array2.append "123" , "234", "345", "456" 
+		      
+		      // array2 should have the same # of elements that are copies of array1
+		      Debug.assert array2.Ubound = array1.Ubound, CurrentMethodName + " got wrong count"
+		      debug.assert array1.Equals(array2) = True, CurrentMethodName + " failed array equals"
+		    End If
 		    
-		    // array2 should be empty
-		    Debug.assert array2.Ubound < 0, CurrentMethodName + " got wrong count"
 		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String = Array ("123")
-		    Dim array2() As String = array1.Slice(0,1)
-		    
-		    // array2 should have 1 element that is a copy of array1
-		    Debug.assert array2.Ubound = 0, CurrentMethodName + " got wrong count"
-		    Debug.assert array2(0) = array1(0), CurrentMethodName + " got wrong value"
-		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String = Array ("123" , "234", "345", "456" )
-		    Dim array2() As String = array1.Slice(1,2)
-		    
-		    // array2 should have 2 elements that is a copy of array1(1) and array1(2)
-		    Debug.assert array2.Ubound = 1, CurrentMethodName + " got wrong count"
-		    Debug.assert array2(0) = array1(1), CurrentMethodName + " got wrong value"
-		    Debug.assert array2(1) = array1(2), CurrentMethodName + " got wrong value"
-		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String = Array ("123" , "234", "345", "456" )
-		    Dim array2() As String = array1.Slice(2,2)
-		    
-		    // array2 should have 2 elements that is a copy of array1(2) and array1(3)
-		    Debug.assert array2.Ubound = 1, CurrentMethodName + " got wrong count"
-		    Debug.assert array2(0) = array1(2), CurrentMethodName + " got wrong value"
-		    Debug.assert array2(1) = array1(3), CurrentMethodName + " got wrong value"
-		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String = Array ("123" , "234", "345", "456" )
-		    Dim array2() As String = array1.Slice(-1,-1)
-		    
-		    // array2 should have 4 elements that are copies of array1
-		    Debug.assert array2.Ubound = array1.Ubound, CurrentMethodName + " got wrong count"
-		    Debug.assert array2(0) = array1(0), CurrentMethodName + " got wrong value"
-		    Debug.assert array2(1) = array1(1), CurrentMethodName + " got wrong value"
-		    Debug.assert array2(2) = array1(2), CurrentMethodName + " got wrong value"
-		    Debug.assert array2(3) = array1(3), CurrentMethodName + " got wrong value"
-		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String = Array ("123" , "234", "345", "456" )
-		    Dim array2() As String = array1.Slice(1,-1)
-		    
-		    // array2 should have 3 elements that are copies of array1
-		    Debug.assert array2.Ubound = 2, CurrentMethodName + " got wrong count"
-		    Debug.assert array2(0) = array1(1), CurrentMethodName + " got wrong value"
-		    Debug.assert array2(1) = array1(2), CurrentMethodName + " got wrong value"
-		    Debug.assert array2(2) = array1(3), CurrentMethodName + " got wrong value"
-		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String
-		    array1.append "123" , "234", "345", "456" 
-		    Dim array2() As String = array1.Slice(1,-1)
-		    
-		    // array2 should have 3 elements that are copies of array1
-		    Debug.assert array2.Ubound = 2, CurrentMethodName + " got wrong count"
-		    Debug.assert array2(0) = array1(1), CurrentMethodName + " got wrong value"
-		    Debug.assert array2(1) = array1(2), CurrentMethodName + " got wrong value"
-		    Debug.assert array2(2) = array1(3), CurrentMethodName + " got wrong value"
-		    
-		  End If
-		  
-		  If True Then
-		    Dim array1() As String
-		    array1.append "123" , "234", "345", "456" 
-		    Dim array2() As String 
-		    array2.append "123" , "234", "345", "456" 
-		    
-		    // array2 should have the same # of elements that are copies of array1
-		    Debug.assert array2.Ubound = array1.Ubound, CurrentMethodName + " got wrong count"
-		    debug.assert array1.Equals(array2) = True, CurrentMethodName + " failed array equals"
-		  End If
-		  
-		  
+		  #EndIf
 		End Sub
 	#tag EndMethod
 

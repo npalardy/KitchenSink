@@ -429,225 +429,229 @@ Protected Module StringExtensions
 
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
-		  // should work
-		  If True Then
-		    dim pattern as string = "%1"
+		  #If DebugBuild
 		    
-		    dim result as string = pattern.ParamStr("foo")
-		    
-		    Debug.assert result = "foo", CurrentMethodName + " did not get the result expected"
-		    Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
-		    
-		  End If
-		  
-		  // should work
-		  If True Then
-		    Dim pattern As String = "%1%2"
-		    
-		    Dim result As String = pattern.ParamStr("%2", "bar")
-		    
-		    Debug.assert result = "%2bar", CurrentMethodName + " did not get the result expected"
-		    Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
-		    
-		  End If
-		  
-		  // should work
-		  If True Then
-		    Dim pattern As String = "%1%2"
-		    
-		    Dim result As String = pattern.ParamStr(Chr(0), Chr(0)+Chr(1)+"bar")
-		    
-		    Debug.assert result = Chr(0)+Chr(0)+Chr(1)+"bar", CurrentMethodName + " did not get the result expected"
-		    Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
-		    
-		  End If
-		  
-		  // should work
-		  If True Then
-		    Dim pattern As String = "%1%2"
-		    
-		    Dim result As String = pattern.ParamStr("%2","%3")
-		    
-		    Debug.assert result = "%2%3", CurrentMethodName + " did not get the result expected"
-		    Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
-		    
-		  End If
-		  
-		  /// ========================
-		  // should work
-		  If True Then
-		    Dim versionOne As String
-		    Dim versionTwo As String = "1"
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
-		      // version 1 should be < version 2
-		      Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		    // should work
+		    If True Then
+		      dim pattern as string = "%1"
 		      
-		    Catch uso As UnsupportedOperationException
-		      Debug.assert False , CurrentMethodName + " got unexpected exception"
-		    End Try
-		    
-		  End If
-		  
-		  If True Then
-		    Dim versionOne As String = "1"
-		    Dim versionTwo As String 
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
-		      // version 1 should be > version 2
-		      Debug.assert result > 0, CurrentMethodName + " did not get the result expected"
+		      dim result as string = pattern.ParamStr("foo")
 		      
-		    Catch uso As UnsupportedOperationException
-		      Debug.assert False , CurrentMethodName + " got unexpected exception"
-		    End Try
-		    
-		  End If
-		  
-		  // should raise an exception
-		  If True Then
-		    Dim versionOne As String = "a"
-		    Dim versionTwo As String = "1"
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
+		      Debug.assert result = "foo", CurrentMethodName + " did not get the result expected"
+		      Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
 		      
-		      debug.assert False, CurrentMethodName + " expected to get an exceptio but didnt"
-		      // version 1 should be < version 2
-		      Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		    End If
+		    
+		    // should work
+		    If True Then
+		      Dim pattern As String = "%1%2"
 		      
-		    Catch uso As UnsupportedOperationException
-		      // this is correct as versionOne is not conformant to the digits.digits.digits form
-		    End Try
-		    
-		  End If
-		  
-		  // should raise an exception
-		  If True Then
-		    Dim versionOne As String = "1"
-		    Dim versionTwo As String = "a"
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
+		      Dim result As String = pattern.ParamStr("%2", "bar")
 		      
-		      debug.assert False, CurrentMethodName + " expected to get an exceptio but didnt"
-		      // version 1 should be < version 2
-		      Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		      Debug.assert result = "%2bar", CurrentMethodName + " did not get the result expected"
+		      Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
 		      
-		    Catch uso As UnsupportedOperationException
-		      // this is correct as versionOne is not conformant to the digits.digits.digits form
-		    End Try
+		    End If
 		    
-		  End If
-		  
-		  // should work
-		  If True Then
-		    Dim versionOne As String = "1.1.1"
-		    Dim versionTwo As String = "1.1.1"
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
-		      // version 1 should be = version 2
-		      Debug.assert result = 0, CurrentMethodName + " did not get the result expected"
+		    // should work
+		    If True Then
+		      Dim pattern As String = "%1%2"
 		      
-		    Catch uso As UnsupportedOperationException
-		      Debug.assert False , CurrentMethodName + " got unexpected exception"
-		    End Try
-		    
-		    
-		  End If
-		  
-		  // should work
-		  If True Then
-		    Dim versionOne As String = "1.1"
-		    Dim versionTwo As String = "1"
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
-		      // version 1 should be > version 2
-		      Debug.assert result = 1, CurrentMethodName + " did not get the result expected"
+		      Dim result As String = pattern.ParamStr(Chr(0), Chr(0)+Chr(1)+"bar")
 		      
-		    Catch uso As UnsupportedOperationException
-		      Debug.assert False , CurrentMethodName + " got unexpected exception"
-		    End Try
-		    
-		  End If
-		  
-		  // should work
-		  If True Then
-		    Dim versionOne As String = "1"
-		    Dim versionTwo As String = "1.1"
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
-		      // version 1 should be < version 2
-		      Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		      Debug.assert result = Chr(0)+Chr(0)+Chr(1)+"bar", CurrentMethodName + " did not get the result expected"
+		      Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
 		      
-		    Catch uso As UnsupportedOperationException
-		      Debug.assert False , CurrentMethodName + " got unexpected exception"
-		    End Try
+		    End If
 		    
-		  End If
-		  
-		  // should work
-		  If True Then
-		    Dim versionOne As String = "1.1"
-		    Dim versionTwo As String = "1.2"
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
-		      // version 1 should be < version 2
-		      Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		    // should work
+		    If True Then
+		      Dim pattern As String = "%1%2"
 		      
-		    Catch uso As UnsupportedOperationException
-		      Debug.assert False , CurrentMethodName + " got unexpected exception"
-		    End Try
-		    
-		  End If
-		  
-		  // should work
-		  If True Then
-		    Dim versionOne As String = "1.2"
-		    Dim versionTwo As String = "1.1"
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
-		      // version 1 should be > version 2
-		      Debug.assert result > 0, CurrentMethodName + " did not get the result expected"
+		      Dim result As String = pattern.ParamStr("%2","%3")
 		      
-		    Catch uso As UnsupportedOperationException
-		      Debug.assert False , CurrentMethodName + " got unexpected exception"
-		    End Try
-		    
-		  End If
-		  
-		  // should work regardless of the length of the string (thanks Sun !)
-		  If True Then
-		    Dim versionOne As String = "1.1.1.1.1.1.1.1"
-		    Dim versionTwo As String = "1.1.1.1.1.1.1.1"
-		    
-		    Dim result As Integer 
-		    Try
-		      result = versionOne.CompareVerionsCodes(versionTwo)
-		      // version 1 should be = version 2
-		      Debug.assert result = 0, CurrentMethodName + " did not get the result expected"
+		      Debug.assert result = "%2%3", CurrentMethodName + " did not get the result expected"
+		      Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
 		      
-		    Catch uso As UnsupportedOperationException
-		      Debug.assert false , CurrentMethodName + " got unexpected exception"
-		    End Try
+		    End If
 		    
-		  End If
-		  
+		    /// ========================
+		    // should work
+		    If True Then
+		      Dim versionOne As String
+		      Dim versionTwo As String = "1"
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        // version 1 should be < version 2
+		        Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        Debug.assert False , CurrentMethodName + " got unexpected exception"
+		      End Try
+		      
+		    End If
+		    
+		    If True Then
+		      Dim versionOne As String = "1"
+		      Dim versionTwo As String 
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        // version 1 should be > version 2
+		        Debug.assert result > 0, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        Debug.assert False , CurrentMethodName + " got unexpected exception"
+		      End Try
+		      
+		    End If
+		    
+		    // should raise an exception
+		    If True Then
+		      Dim versionOne As String = "a"
+		      Dim versionTwo As String = "1"
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        
+		        debug.assert False, CurrentMethodName + " expected to get an exceptio but didnt"
+		        // version 1 should be < version 2
+		        Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        // this is correct as versionOne is not conformant to the digits.digits.digits form
+		      End Try
+		      
+		    End If
+		    
+		    // should raise an exception
+		    If True Then
+		      Dim versionOne As String = "1"
+		      Dim versionTwo As String = "a"
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        
+		        debug.assert False, CurrentMethodName + " expected to get an exceptio but didnt"
+		        // version 1 should be < version 2
+		        Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        // this is correct as versionOne is not conformant to the digits.digits.digits form
+		      End Try
+		      
+		    End If
+		    
+		    // should work
+		    If True Then
+		      Dim versionOne As String = "1.1.1"
+		      Dim versionTwo As String = "1.1.1"
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        // version 1 should be = version 2
+		        Debug.assert result = 0, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        Debug.assert False , CurrentMethodName + " got unexpected exception"
+		      End Try
+		      
+		      
+		    End If
+		    
+		    // should work
+		    If True Then
+		      Dim versionOne As String = "1.1"
+		      Dim versionTwo As String = "1"
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        // version 1 should be > version 2
+		        Debug.assert result = 1, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        Debug.assert False , CurrentMethodName + " got unexpected exception"
+		      End Try
+		      
+		    End If
+		    
+		    // should work
+		    If True Then
+		      Dim versionOne As String = "1"
+		      Dim versionTwo As String = "1.1"
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        // version 1 should be < version 2
+		        Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        Debug.assert False , CurrentMethodName + " got unexpected exception"
+		      End Try
+		      
+		    End If
+		    
+		    // should work
+		    If True Then
+		      Dim versionOne As String = "1.1"
+		      Dim versionTwo As String = "1.2"
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        // version 1 should be < version 2
+		        Debug.assert result < 0, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        Debug.assert False , CurrentMethodName + " got unexpected exception"
+		      End Try
+		      
+		    End If
+		    
+		    // should work
+		    If True Then
+		      Dim versionOne As String = "1.2"
+		      Dim versionTwo As String = "1.1"
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        // version 1 should be > version 2
+		        Debug.assert result > 0, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        Debug.assert False , CurrentMethodName + " got unexpected exception"
+		      End Try
+		      
+		    End If
+		    
+		    // should work regardless of the length of the string (thanks Sun !)
+		    If True Then
+		      Dim versionOne As String = "1.1.1.1.1.1.1.1"
+		      Dim versionTwo As String = "1.1.1.1.1.1.1.1"
+		      
+		      Dim result As Integer 
+		      Try
+		        result = versionOne.CompareVerionsCodes(versionTwo)
+		        // version 1 should be = version 2
+		        Debug.assert result = 0, CurrentMethodName + " did not get the result expected"
+		        
+		      Catch uso As UnsupportedOperationException
+		        Debug.assert false , CurrentMethodName + " got unexpected exception"
+		      End Try
+		      
+		    End If
+		    
+		    
+		  #EndIf
 		End Sub
 	#tag EndMethod
 
