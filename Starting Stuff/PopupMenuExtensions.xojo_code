@@ -1,6 +1,14 @@
 #tag Module
 Protected Module PopupMenuExtensions
 	#tag Method, Flags = &h0
+		Sub AddRowWithTag(extends popup as popupmenu, rowtext as string, rowtag as variant = nil)
+		  popup.AddRow rowtext
+		  popup.RowTag(popup.LastAddedRowIndex) = rowTag
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub CheckMarkForitem(extends popup as popupMenu, indexToCheck as integer, state as popupmenuextensions.States)
 		  #Pragma unused popup
 		  #Pragma unused indexToCheck
@@ -20,6 +28,12 @@ Protected Module PopupMenuExtensions
 		    
 		  #EndIf
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function SelectedRowTag(extends popup as PopupMenu) As variant
+		  return popup.RowTagAt(popup.SelectedRowIndex) 
+		End Function
 	#tag EndMethod
 
 

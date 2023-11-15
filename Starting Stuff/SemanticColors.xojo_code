@@ -82,12 +82,17 @@ Protected Module SemanticColors
 		        Return &cFFFEFE00
 		        
 		      Else
+		        Declare Function NSClassFromString Lib "Foundation" ( name As CFStringRef ) As Ptr
 		        Declare Function alternatingContentBackgroundColors Lib "AppKit" Selector "alternatingContentBackgroundColors" (obj As Ptr) As Ptr
 		        
-		        InitNSColorClass
-		        // Dim NSColorPtr As Ptr
+		        Dim NSColorClass As Ptr = NSClassFromString("NSColor")
 		        
-		        Break
+		        Dim colorArray As Ptr = alternatingContentBackgroundColors(NSColorClass)
+		        
+		        Dim colorPtr As Ptr = GetNSArrayObj( colorArray, 0)
+		        
+		        Return NSColorToColor(colorPtr)
+		        
 		        
 		      End If
 		    #EndIf
@@ -114,10 +119,16 @@ Protected Module SemanticColors
 		        Return &cFFFEFE00
 		        
 		      Else
+		        Declare Function NSClassFromString Lib "Foundation" ( name As CFStringRef ) As Ptr
 		        Declare Function alternatingContentBackgroundColors Lib "AppKit" Selector "alternatingContentBackgroundColors" (obj As Ptr) As Ptr
 		        
-		        InitNSColorClass
-		        // Dim NSColorPtr As Ptr
+		        Dim NSColorClass As Ptr = NSClassFromString("NSColor")
+		        
+		        Dim colorArray As Ptr = alternatingContentBackgroundColors(NSColorClass)
+		        
+		        Dim colorPtr As Ptr = GetNSArrayObj( colorArray, 1)
+		        
+		        Return NSColorToColor(colorPtr)
 		        
 		        Break
 		      End If
@@ -2309,8 +2320,8 @@ Protected Module SemanticColors
 	#tag EndMethod
 
 
-	#tag Property, Flags = &h21
-		Private NSColorClass As Ptr
+	#tag Property, Flags = &h1
+		Protected NSColorClass As Ptr
 	#tag EndProperty
 
 

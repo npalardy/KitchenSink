@@ -1985,6 +1985,7 @@ Protected Module LanguageUtils
 		  Dim openBrackets As Integer
 		  Dim bounds_str As String
 		  Dim modifiers As String
+		  Dim isParamArray As Boolean
 		  
 		  While tokens.count > 0
 		    
@@ -1995,18 +1996,21 @@ Protected Module LanguageUtils
 		    Case kIdentExpected
 		      
 		      
-		      If token = "ByRef" Or token = "ByVal" Or token = "Optional" Or token = "ParamArray" Then
+		      If token = "ByRef" Or token = "ByVal" Or token = "Optional" Then
 		        // these arent important in method sigs
+		      ElseIf token = "ParamArray" Then
+		        isParamArray = True
 		      ElseIf token = "Assigns" Or token = "Extends" Then
 		        If modifiers <> "" Then
 		          modifiers = modifiers + " "
 		        End If
 		        modifiers = modifiers + token
 		      Else
-		        outVars.Append New LocalVariable( token, "", lineNum )
+		        outVars.Append New LocalVariable( token, "", lineNum, isParamArray )
 		        mode = kAsExpected
 		        outVars(UBound(outVars)).modifiers = modifiers
 		        modifiers = ""
+		        isParamArray = False
 		      End If
 		      
 		      
@@ -3784,6 +3788,13 @@ Protected Module LanguageUtils
 		    
 		    
 		  End If
+		  
+		  If True Then
+		    Dim vars() As LanguageUtils.LocalVariable
+		    vars = CrackParams("paramarray a as integer")
+		    ErrorIf vars.Ubound <> 0
+		    ErrorIf vars(0).type <> "integer()"
+		  End If
 		End Sub
 	#tag EndMethod
 
@@ -4246,6 +4257,97 @@ Protected Module LanguageUtils
 		      
 		    End If
 		    
+		    
+		    
+		    If True Then
+		      // parse whitespace + macOS EOL properly on Windows ?
+		      Dim tk As LanguageUtils.token
+		      Dim src As String = &u09 + " " + EndOfLine.Windows + "123" 
+		      Dim start As Integer = 1
+		      
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.stringvalue <> &u09 + " " Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.tokentype <> LanguageUtils.token.Types.EndOfLine Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.stringvalue <> "123" Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If (tk Is Nil) = False Then
+		        Break // probelm there should be no next token  !
+		      End If
+		      
+		    End If
+		    
+		    If True Then
+		      // parse whitespace + macOS EOL properly on Windows ?
+		      Dim tk As LanguageUtils.token
+		      Dim src As String = &u09 + " // this is a comment " + EndOfLine.Windows + "123" 
+		      Dim start As Integer = 1
+		      
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.stringvalue <> &u09 + " " Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      
+		      If tk.stringvalue <> "// this is a comment " Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.tokentype <> LanguageUtils.token.Types.EndOfLine Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If tk Is Nil Then
+		        Break
+		      End If
+		      If tk.stringvalue <> "123" Then
+		        Break
+		      End If
+		      
+		      start = start + tk.read
+		      tk = NextToken(src, start) 
+		      If (tk Is Nil) = False Then
+		        Break // probelm there should be no next token  !
+		      End If
+		      
+		    End If
 		  #EndIf
 		End Sub
 	#tag EndMethod
@@ -5081,6 +5183,26 @@ Protected Module LanguageUtils
 		    
 		    
 		  End If
+		  
+		  
+		  // 
+		  // while this WONT compile its not "invalid to write"
+		  // 
+		  // If True Then
+		  // Dim content As String
+		  // Dim attrs As String
+		  // Dim scope As String
+		  // Dim subFunc As String
+		  // Dim methodName As String
+		  // Dim params As String
+		  // Dim returnType As String
+		  // 
+		  // content = "Function getBoundPart(dim paramarray s As Ptr) As WindowPtr"
+		  // 
+		  // ErrorIf LanguageUtils.CrackMethodDeclaration(content, attrs, scope, subFunc, methodName, params, returnType) <> False
+		  // 
+		  // End If
+		  
 		End Sub
 	#tag EndMethod
 
@@ -5328,6 +5450,23 @@ Protected Module LanguageUtils
 		    
 		    
 		    src = "SHARED PUBLIC PROPERTY name as string"
+		    
+		    ErrorIf LanguageUtils.CrackPropertyDeclaration(src, isShared, scope, propName, isnew, type, optionalDefault) <> False
+		    
+		  End If
+		  
+		  
+		  If True Then
+		    Dim src As String
+		    Dim isShared As Boolean
+		    Dim scope As String
+		    Dim propName As String
+		    Dim isNew As Boolean
+		    Dim type As String
+		    Dim optionalDefault As String
+		    
+		    
+		    src = "dim paramarray name as string"
 		    
 		    ErrorIf LanguageUtils.CrackPropertyDeclaration(src, isShared, scope, propName, isnew, type, optionalDefault) <> False
 		    
@@ -6099,6 +6238,27 @@ Protected Module LanguageUtils
 		    ErrorIf scope <> kScopePublic
 		    ErrorIf methodName <> "getBoundPart"
 		    ErrorIf params <> "s as Ptr"
+		    ErrorIf returnType <> "WindowPtr"
+		  End If
+		  
+		  
+		  
+		  If True Then
+		    Dim content As String
+		    Dim attrs As String
+		    Dim scope As String
+		    Dim subFunc As String
+		    Dim methodName As String
+		    Dim params As String
+		    Dim returnType As String
+		    
+		    content = "Function getBoundPart(paramarray s As Ptr) As WindowPtr"
+		    
+		    // cracking will rip out multiple spaces
+		    ErrorIf LanguageUtils.CrackMethodDeclaration(content, attrs, scope, subFunc, methodName, params, returnType) <> True
+		    ErrorIf scope <> kScopePublic
+		    ErrorIf methodName <> "getBoundPart"
+		    ErrorIf params <> "paramarray s As Ptr"
 		    ErrorIf returnType <> "WindowPtr"
 		  End If
 		  

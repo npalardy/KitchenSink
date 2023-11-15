@@ -1,10 +1,11 @@
 #tag Class
 Protected Class LocalVariable
 	#tag Method, Flags = &h0
-		Sub Constructor(varName As String, varType As String, line As Integer)
+		Sub Constructor(varName as String, varType as String, line as Integer, parray as boolean = false)
 		  name = varName
 		  type = VarType
 		  firstLine = line
+		  isParamarray = parray
 		  
 		  // quick and simple but wrong in many cases
 		  If VarType.Right(2) = "()" Then
@@ -101,6 +102,10 @@ Protected Class LocalVariable
 		    
 		  End If
 		  
+		  If isParamarray Then
+		    isarray = True
+		  End If
+		  
 		End Sub
 	#tag EndMethod
 
@@ -162,6 +167,10 @@ Protected Class LocalVariable
 
 	#tag Property, Flags = &h0
 		isarray As boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		isParamarray As boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -269,6 +278,14 @@ Protected Class LocalVariable
 			InitialValue=""
 			Type="boolean"
 			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="modifiers"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="string"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class

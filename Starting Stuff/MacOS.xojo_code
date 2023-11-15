@@ -325,9 +325,9 @@ Protected Module MacOS
 		  #if TargetMacOS
 		    const CarbonFramework = "Carbon.framework"
 		    
-		    dim SystemVersion as Integer
-		    dim SystemOSX as Boolean = System.Gestalt("sysv", SystemVersion) and (SystemVersion >= &h1000)
-		    If SystemOSX then
+		    Dim SystemVersion As Integer
+		    Dim SystemOSX As Boolean = System.Gestalt("sysv", SystemVersion) And (SystemVersion >= &h1000)
+		    If SystemOSX Then
 		      soft declare Function CSCopyUserName Lib CarbonFramework (useShortName as Boolean) as CFStringRef
 		      
 		      return CSCopyUserName(shortName)

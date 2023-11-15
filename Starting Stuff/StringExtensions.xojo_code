@@ -1,5 +1,40 @@
 #tag Module
 Protected Module StringExtensions
+	#tag Method, Flags = &h21
+		Private Function chunkify(param1 as string) As string()
+		  
+		  Dim startpos As Integer = 0
+		  Dim endpos As Integer = 0
+		  Dim workingString As String = param1
+		  Dim chunks() As String
+		  
+		  While InStr(workingString, "{") > 0
+		    
+		    // find the chunk from 0 to {
+		    startpos = InStr(workingString, "{")
+		    
+		    endpos = InStr(workingString, "}")
+		    
+		    Dim beforeBraceChunk As String = Left(workingString, startPos-1)
+		    Dim betweenBraceChunk As String = Mid(workingString, startpos, endPos - startpos+1)
+		    
+		    chunks.append beforeBraceChunk
+		    chunks.append  betweenBraceChunk
+		    
+		    // and now working is everything after the }
+		    workingString = Mid(workingString, endpos + 1)
+		    
+		  Wend
+		  
+		  If workingString <> "" Then
+		    chunks.append workingString
+		  End If
+		  
+		  Return chunks
+		  
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0
 		Function CompareVerionsCodes(extends selfString as string, otherVersionString as string) As integer
 		  Const kSelfLessThanOther = -1
@@ -259,6 +294,22 @@ Protected Module StringExtensions
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function Interpolate(extends patternString as string, paramarray vars as variant) As string
+		  // String.Interpolate("Exceeds {1:####0} points", maxPoints)
+		  
+		  return privateInterp(patternString, vars)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function Interpolate(patternString as string, paramarray vars as variant) As string
+		  // String.Interpolate("Exceeds {1:####0} points", maxPoints)
+		  
+		  return privateInterp(patternString, vars)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function IsDigit(extends candidate as string) As Boolean
 		  // we're checking single digits
 		  If Len(candidate) <> 1 Then
@@ -427,6 +478,115 @@ Protected Module StringExtensions
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h21
+		Private Function privateInterp(patternstring as string, vars() as Variant) As string
+		  
+		  
+		  // ok we find all the chunks mared as {###[:format pattern]}
+		  // replace each of them with a suitably formahted value
+		  //     there _may_ not be one so it gets left untouched
+		  // put the entire mess back together
+		  // and return the resulting string
+		  
+		  Dim chunks() As String = chunkify(patternString)
+		  
+		  For i As Integer = 0 To chunks.ubound
+		    // ok so formats are
+		    //    { number : format str }
+		    //  numbers are 0 based for "first param" (0)
+		    //  format strings ESP for numeric values are the same as the FORMAT command
+		    //  format strings for date / date time can be
+		    //               - a locale name ?
+		    //               - short|medium|long : sort|medium|long (date & time)
+		    //               - YY   - 2 digit year
+		    //               - YYYY - 4 digit year
+		    //               - M    - month # (not zero filled)
+		    //               - MM   - 2 digit month # 
+		    //               - MMM  - month name (not sure about this one)
+		    //               - D    - day # not zero filled
+		    //               - DD   - 2 digit day # 
+		    //               - h    - hour (not zero filled)
+		    //               - hh   - hour (zero filled)
+		    //               - H    - hour 0 - 24 (not zero filled)
+		    //               - HH   - hour 0 - 24 (zero filled)
+		    //               - m    - minute (not zero filled)
+		    //               - mm   - minute (zero filled)
+		    //               - s    - second (not zero filled)
+		    //               - ss   - second (zero filled)
+		    //               - a - am pm
+		    
+		    Dim working As String = chunks(i)
+		    If working.BeginsWith("{") And working.EndsWith("}") Then
+		      // ok rip off the leading and trailing { and } 
+		      //    - they _could_ exist in a pattern string - unlikely but possible
+		      Dim interpMarkerContent As String = working.Mid(2, working.Len - 2)
+		      
+		      Dim varNumStr As String = NthField(interpMarkerContent,":", 1)
+		      Dim fmtStr As String = NthField(interpMarkerContent,":", 2)
+		      
+		      Dim varNum As Integer = Val(varNumStr)
+		      If varNum >= 1 And varNum <= vars.ubound+1 Then
+		        
+		        Dim variable As Variant = vars(varNum-1)
+		        
+		        Select Case variable.Type
+		        Case Variant.TypeBoolean
+		          chunks(i) = variable.BooleanValue.ToString
+		          
+		        Case Variant.TypeColor
+		          chunks(i) = ToProperColorString(variable.ColorValue)
+		          
+		        Case Variant.TypeCString
+		          chunks(i) = variable.CStringValue
+		          
+		        Case Variant.TypeCurrency
+		          chunks(i) = Format(variable.CurrencyValue, fmtStr)
+		          
+		        Case Variant.TypeDate
+		          Dim secondsSince1970 As Double 
+		          Dim dt1970 As New Date(1970,01,01,0,0,0)
+		          secondsSince1970 = variable.DateValue.TotalSeconds - dt1970.TotalSeconds
+		          Dim dt As New DateTime( secondsSince1970, Nil)
+		          chunks(i) = dt.ToString( fmtStr, Nil )
+		          
+		        Case Variant.TypeDateTime
+		          chunks(i) = variable.DateTimeValue.ToString( fmtStr, Nil )
+		          
+		        Case Variant.TypeDouble
+		          chunks(i) = Format(variable.DoubleValue, fmtStr)
+		          
+		        Case Variant.TypeInt32
+		          chunks(i) = Format(variable.Int32Value, fmtStr)
+		          
+		        Case Variant.TypeInt64
+		          chunks(i) = Format(variable.Int64Value, fmtStr)
+		          
+		        Case Variant.TypeInteger
+		          chunks(i) = Format(variable.IntegerValue, fmtStr)
+		          
+		        Case Variant.TypeNil
+		          Break
+		          
+		        Case Variant.TypeSingle
+		          chunks(i) = Format(variable.SingleValue, fmtStr)
+		          
+		        Case Variant.TypeString
+		          chunks(i) = variable.StringValue
+		          
+		        Else
+		          Break
+		        End select
+		        
+		      End If
+		    End If
+		    
+		  Next
+		  
+		  Return Join(chunks, "")
+		  
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h1
 		Protected Sub RunUnitTests()
 		  #If DebugBuild
@@ -460,6 +620,17 @@ Protected Module StringExtensions
 		      Dim result As String = pattern.ParamStr(Chr(0), Chr(0)+Chr(1)+"bar")
 		      
 		      Debug.assert result = Chr(0)+Chr(0)+Chr(1)+"bar", CurrentMethodName + " did not get the result expected"
+		      Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
+		      
+		    End If
+		    
+		    // should work
+		    If True Then
+		      Dim pattern As String = "%1%2"
+		      
+		      Dim result As String = pattern.ParamStr("%2","%3")
+		      
+		      Debug.assert result = "%2%3", CurrentMethodName + " did not get the result expected"
 		      Debug.assert result.Encoding = pattern.Encoding, CurrentMethodName + " did not get the same encoding"
 		      
 		    End If
@@ -650,6 +821,20 @@ Protected Module StringExtensions
 		      
 		    End If
 		    
+		    //
+		    If True Then
+		      Dim x1, y1, x2, y2 As Integer
+		      x1 = 1
+		      y1 = 2
+		      x2 = 3
+		      y2 = 4
+		      
+		      Dim result As String = Interpolate("{1:##0} {2:##0} - {3:##0} {4:##0} ", X1,Y1,X2,Y2)
+		      
+		      Debug.assert result = "1 2 - 3 4 ", CurrentMethodName + " did not get the result expected"
+		      Debug.assert result.Encoding = Encodings.UTF8, CurrentMethodName + " did not get the same encoding"
+		      
+		    End If
 		    
 		  #EndIf
 		End Sub
@@ -740,6 +925,26 @@ Protected Module StringExtensions
 		Function ToInteger(s as string) As Integer
 		  
 		  Return s.ToInteger
+		  
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function ToProperColorString(c as Color) As String
+		  
+		  Dim r,g,b,a As Integer
+		  
+		  r = c.red
+		  g = c.Green
+		  b = c.Blue
+		  a = c.Alpha
+		  
+		  Return "&c" + Right("00" + r.ToHex, 2) + _
+		  Right("00" + g.ToHex, 2) + _
+		  Right("00" + b.ToHex, 2) + _
+		  Right("00" + a.ToHex, 2) 
+		  
 		  
 		  
 		End Function
