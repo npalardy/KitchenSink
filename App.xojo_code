@@ -25,6 +25,7 @@ Inherits Application
 		  Security.RunUnitTests
 		  PlatformUtilities.RunUnitTests
 		  DateExtensions.RunUnitTests
+		  DateTimeExtensions.RunUnitTests
 		  
 		  #If targetMacOS Then
 		    // --- This code snippet was made from the Ohanaware App Kit 2021 - ohanaware.com
@@ -92,5 +93,7 @@ Inherits Application
 	#tag EndConstant
 
 
+	#tag ViewBehavior
+	#tag EndViewBehavior
 End Class
 #tag EndClass
