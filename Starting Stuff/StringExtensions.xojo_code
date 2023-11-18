@@ -119,6 +119,18 @@ Protected Module StringExtensions
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function EncodeBase64Properly(extends toEncodeAsBase64 as String) As string
+		  return ConvertEncoding( EncodeBase64(toEncodeAsBase64), Encodings.ASCII )
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
+		Protected Function EncodeBase64Properly(toEncodeAsBase64 as String) As string
+		  return toEncodeAsBase64.EncodeBase64Properly
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function GuessEncoding(s As String) As TextEncoding
 		  // from https://forum.xojo.com/t/how-to-get-unknown-encoding-of-textinputstream/21434/8
 		  
@@ -833,6 +845,21 @@ Protected Module StringExtensions
 		      
 		      Debug.assert result = "1 2 - 3 4 ", CurrentMethodName + " did not get the result expected"
 		      Debug.assert result.Encoding = Encodings.UTF8, CurrentMethodName + " did not get the same encoding"
+		      
+		    End If
+		    
+		    
+		    //======================================================
+		    //======================================================
+		    //======================================================
+		    //======================================================
+		    //
+		    If True Then
+		      Dim start As String
+		      Dim result As String = EncodeBase64Properly( "123456" )
+		      
+		      Debug.assert result.Encoding = Encodings.ASCII, "Encoding SHOULD BE ASCII !"
+		      Debug.assert result = "MTIzNDU2", "Didnt base 64 encode properly"
 		      
 		    End If
 		    
