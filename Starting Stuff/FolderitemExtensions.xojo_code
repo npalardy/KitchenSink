@@ -456,8 +456,8 @@ Protected Module FolderitemExtensions
 	#tag EndStructure
 
 	#tag Structure, Name = NSSize, Flags = &h0
-		Height as CGFloat
 		Width as CGFloat
+		Height as CGFloat
 	#tag EndStructure
 
 
