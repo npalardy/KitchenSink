@@ -6,6 +6,8 @@ Inherits Application
 		  Dim result As Integer 
 		  result = macOS.IsProcessTranslated
 		  
+		  Dim username As String = MacOS.UserName(false)
+		  
 		  // unfortunately there is no way using introspection to find 
 		  // modules, or their methods and classes
 		  // and then run them 

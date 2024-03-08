@@ -322,21 +322,35 @@ Protected Module MacOS
 
 	#tag Method, Flags = &h1
 		Protected Function UserName(shortName as Boolean) As String
-		  #if TargetMacOS
-		    const CarbonFramework = "Carbon.framework"
+		  #If TargetMacOS
+		    // const CarbonFramework = "Carbon.framework"
+		    // 
+		    // Dim SystemVersion As Integer
+		    // Dim SystemOSX As Boolean = System.Gestalt("sysv", SystemVersion) And (SystemVersion >= &h1000)
+		    // If SystemOSX Then
+		    // soft declare Function CSCopyUserName Lib CarbonFramework (useShortName as Boolean) as CFStringRef
+		    // 
+		    // return CSCopyUserName(shortName)
+		    // Else
+		    // // dim m as new MemoryBlock(32)
+		    // // m.StringValue(0, 32) = app.ResourceFork.GetResource("STR ", -16413)
+		    // // Return DefineEncoding(m.PString(0), Encodings.SystemDefault)
+		    // End if
 		    
-		    Dim SystemVersion As Integer
-		    Dim SystemOSX As Boolean = System.Gestalt("sysv", SystemVersion) And (SystemVersion >= &h1000)
-		    If SystemOSX Then
-		      soft declare Function CSCopyUserName Lib CarbonFramework (useShortName as Boolean) as CFStringRef
-		      
-		      return CSCopyUserName(shortName)
-		    Else
-		      // dim m as new MemoryBlock(32)
-		      // m.StringValue(0, 32) = app.ResourceFork.GetResource("STR ", -16413)
-		      // Return DefineEncoding(m.PString(0), Encodings.SystemDefault)
-		    End if
-		  #endif
+		    
+		    Const CocoaLib As String = "Cocoa.framework"
+		    
+		    Const NSClassName As String = "NSProcessInfo"
+		    
+		    Declare Function defaultCenter Lib CocoaLib Selector "processInfo" (class_id As Ptr) As Ptr
+		    Declare Function NSClassFromString Lib CocoaLib (aClassName As CFStringRef) As Ptr
+		    Declare Function userName Lib CocoaLib Selector "userName" (obj_id As Ptr) As CFStringRef
+		    
+		    Dim p As Ptr = defaultCenter(NSClassFromString(NSClassName))
+		    
+		    Return userName(p)
+		    
+		  #EndIf
 		End Function
 	#tag EndMethod
 
