@@ -958,13 +958,38 @@ Protected Module DateExtensions
 		    // 2023-11-15 16:35:0 +07:00
 		    resetDateTime = New date(2023, 11, 15, 16, 35, 0, 7.0 )
 		    s = ISO8601DateTimeStr(resetDateTime)
-		    
 		    If s <> "2023-11-15 16:35:00 +07:00" Then
 		      Raise New UnsupportedOperationException
 		    End If
 		    
+		    resetDateTime = New date(2023, 11, 15, 16, 35, 0, -7.0 )
+		    s = resetDateTime.ToISO8601
+		    If s <> "2023-11-15 16:35:00 -07:00" Then
+		      Raise New UnsupportedOperationException
+		    End If
+		    
+		    // 2023-11-15 16:35:0 +00:00
+		    resetDateTime = New date(2023, 11, 15, 16, 35, 0, 0 )
+		    s = resetDateTime.ToISO8601
+		    If s <> "2023-11-15 16:35:00 +00:00" Then
+		      Raise New UnsupportedOperationException
+		    End If
+		    
+		    // 2023-11-15 16:35:0 +07:00
+		    resetDateTime = New date(2023, 11, 15, 16, 35, 0, 7.0 )
+		    s = resetDateTime.ToISO8601
+		    If s <> "2023-11-15 16:35:00 +07:00" Then
+		      Raise New UnsupportedOperationException
+		    End If
 		  #EndIf
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ToISO8601(extends d as date) As string
+		  Return DateExtensions.ISO8601DateTimeStr(d)
+		  
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
