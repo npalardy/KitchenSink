@@ -15,11 +15,13 @@ Protected Module Preferences
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h21
-		Private Function HasKeyX(key as String) As boolean
+	#tag Method, Flags = &h0
+		Function HasKey(key as String) As Boolean
+		  #Pragma unused key
+		  
 		  InitPrefsInstance
 		  
-		  return m_PrefsImplementation.hasKey(key)
+		  Return m_PrefsImplementation.HasKey(key)
 		End Function
 	#tag EndMethod
 
@@ -50,6 +52,86 @@ Protected Module Preferences
 		  // ok so we got Notified 
 		  
 		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ReadBoolean(key as String) As Boolean
+		  #Pragma unused key
+		  
+		  InitPrefsInstance
+		  
+		  return m_PrefsImplementation.ReadBoolean(key)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ReadColor(key As String) As Color
+		  #Pragma unused key
+		  
+		  InitPrefsInstance
+		  
+		  return m_PrefsImplementation.ReadColor(key)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ReadDate(key As String) As Date
+		  #Pragma unused key
+		  
+		  InitPrefsInstance
+		  
+		  return m_PrefsImplementation.ReadDate(key)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ReadDouble(key As String) As Double
+		  #Pragma unused key
+		  
+		  InitPrefsInstance
+		  
+		  return m_PrefsImplementation.ReadDouble(key)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ReadInteger(key As String) As Integer
+		  #Pragma unused key
+		  
+		  InitPrefsInstance
+		  
+		  return m_PrefsImplementation.ReadInteger(key)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ReadString(key As String) As String
+		  #Pragma unused key
+		  
+		  InitPrefsInstance
+		  
+		  return m_PrefsImplementation.ReadString(key)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ReadStringArray(key As String) As string()
+		  #Pragma unused key
+		  
+		  InitPrefsInstance
+		  
+		  return m_PrefsImplementation.ReadStringArray(key)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub Remove(key As String)
+		  #Pragma unused key
+		  
+		  InitPrefsInstance
+		  
+		  m_PrefsImplementation.Remove(key)
 		End Sub
 	#tag EndMethod
 
@@ -162,6 +244,83 @@ Protected Module Preferences
 		    End If
 		    
 		  #EndIf
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteBoolean(key as string, value as Boolean)
+		  #Pragma unused key
+		  #Pragma unused value
+		  
+		  InitPrefsInstance
+		  
+		  m_PrefsImplementation.WriteBoolean(key, value)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteColor(key as string, value as Color)
+		  #Pragma unused key
+		  #Pragma unused value
+		  
+		  InitPrefsInstance
+		  
+		  m_PrefsImplementation.WriteColor(key, value)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteDate(key as string, value as date)
+		  #Pragma unused key
+		  #Pragma unused value
+		  
+		  InitPrefsInstance
+		  
+		  m_PrefsImplementation.WriteDate(key, value)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteDouble(key as string, value as Double)
+		  #Pragma unused key
+		  #Pragma unused value
+		  
+		  InitPrefsInstance
+		  
+		  m_PrefsImplementation.WriteDouble(key, value)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteInteger(key as string, value as integer)
+		  #Pragma unused key
+		  #Pragma unused value
+		  
+		  InitPrefsInstance
+		  
+		  m_PrefsImplementation.WriteInteger(key, value)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteString(key as string, value as String)
+		  #Pragma unused key
+		  #Pragma unused value
+		  
+		  InitPrefsInstance
+		  
+		  m_PrefsImplementation.WriteString(key, value)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteStringArray(key as string, arr() as string)
+		  #Pragma unused key
+		  #Pragma unused arr
+		  
+		  InitPrefsInstance
+		  
+		  m_PrefsImplementation.WriteStringArray(key, arr)
 		End Sub
 	#tag EndMethod
 
