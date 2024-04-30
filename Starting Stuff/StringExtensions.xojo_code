@@ -507,7 +507,9 @@ Protected Module StringExtensions
 		    //    { number : format str }
 		    //  numbers are 0 based for "first param" (0)
 		    //  format strings ESP for numeric values are the same as the FORMAT command
-		    //  format strings for date / date time can be
+		    //
+		    // see https://unicode-org.github.io/icu/userguide/format_parse/datetime/#formatting-dates
+		    //  format strings for date / date time can be (NOTE THESE ARE CASE SENSITIVE !)
 		    //               - a locale name ?
 		    //               - short|medium|long : sort|medium|long (date & time)
 		    //               - YY   - 2 digit year
@@ -515,8 +517,9 @@ Protected Module StringExtensions
 		    //               - M    - month # (not zero filled)
 		    //               - MM   - 2 digit month # 
 		    //               - MMM  - month name (not sure about this one)
-		    //               - D    - day # not zero filled
-		    //               - DD   - 2 digit day # 
+		    //               - d    - day # not zero filled
+		    //               - dd   - 2 digit day # 
+		    //               - DD   - day # of the year
 		    //               - h    - hour (not zero filled)
 		    //               - hh   - hour (zero filled)
 		    //               - H    - hour 0 - 24 (not zero filled)
@@ -552,34 +555,60 @@ Protected Module StringExtensions
 		          chunks(i) = variable.CStringValue
 		          
 		        Case Variant.TypeCurrency
+		          If Trim(fmtStr) = "" Then
+		            fmtStr = "-#######0.0000"
+		          End If
 		          chunks(i) = Format(variable.CurrencyValue, fmtStr)
 		          
 		        Case Variant.TypeDate
-		          Dim secondsSince1970 As Double 
-		          Dim dt1970 As New Date(1970,01,01,0,0,0)
-		          secondsSince1970 = variable.DateValue.TotalSeconds - dt1970.TotalSeconds
-		          Dim dt As New DateTime( secondsSince1970, Nil)
-		          chunks(i) = dt.ToString( fmtStr, Nil )
+		          If Trim(fmtStr) = "" Then
+		            chunks(i) = date(variable).SQLDateTime
+		          Else
+		            Dim secondsSince1970 As Double 
+		            Dim dt1970 As New Date(1970,01,01,0,0,0)
+		            secondsSince1970 = variable.DateValue.TotalSeconds - dt1970.TotalSeconds
+		            Dim dt As New DateTime( secondsSince1970, Nil)
+		            chunks(i) = dt.ToString( fmtStr, Nil )
+		          End If
 		          
 		        Case Variant.TypeDateTime
-		          chunks(i) = variable.DateTimeValue.ToString( fmtStr, Nil )
+		          If Trim(fmtStr) = "" Then
+		            chunks(i) = DateTime(variable).SQLDateTime
+		          Else
+		            chunks(i) = variable.DateTimeValue.ToString( fmtStr, Nil )
+		          End If
 		          
 		        Case Variant.TypeDouble
+		          If Trim(fmtStr) = "" Then
+		            fmtStr = "-#######0.0000"
+		          End If
 		          chunks(i) = Format(variable.DoubleValue, fmtStr)
 		          
 		        Case Variant.TypeInt32
+		          If Trim(fmtStr) = "" Then
+		            fmtStr = "-#######0"
+		          End If
 		          chunks(i) = Format(variable.Int32Value, fmtStr)
 		          
 		        Case Variant.TypeInt64
+		          If Trim(fmtStr) = "" Then
+		            fmtStr = "-#######0"
+		          End If
 		          chunks(i) = Format(variable.Int64Value, fmtStr)
 		          
 		        Case Variant.TypeInteger
+		          If Trim(fmtStr) = "" Then
+		            fmtStr = "-#######0"
+		          End If
 		          chunks(i) = Format(variable.IntegerValue, fmtStr)
 		          
 		        Case Variant.TypeNil
 		          Break
 		          
 		        Case Variant.TypeSingle
+		          If Trim(fmtStr) = "" Then
+		            fmtStr = "-#######0.0000"
+		          End If
 		          chunks(i) = Format(variable.SingleValue, fmtStr)
 		          
 		        Case Variant.TypeString
@@ -848,6 +877,37 @@ Protected Module StringExtensions
 		      
 		    End If
 		    
+		    If True Then
+		      Dim x1, y1, x2, y2 As Integer
+		      x1 = 1
+		      y1 = 2
+		      x2 = 3
+		      y2 = 4
+		      
+		      Dim result As String = Interpolate("{1} {2} - {3} {4}", X1,Y1,X2,Y2)
+		      
+		      Debug.assert result = "1 2 - 3 4", CurrentMethodName + " did not get the result expected"
+		      Debug.assert result.Encoding = Encodings.UTF8, CurrentMethodName + " did not get the same encoding"
+		      
+		    End If
+		    
+		    If True Then
+		      Dim c1 As Currency
+		      Dim d1 As New Date(2024,12,31,12,43,56)
+		      Dim d2 As New DateTime(2024,12,31,12,43,56)
+		      Dim dbl1 As Double
+		      Dim i32 As Int32
+		      Dim i64 As Int64
+		      Dim i As Integer
+		      Dim s1 As Single
+		      
+		      Dim result As String = Interpolate("{1} {2} {3} {4} {5} {6} {7} {8}", c1,d1,d2,dbl1,i32,i64,i,s1)
+		      
+		      Debug.assert result = "0.0000 2024-12-31 12:43:56 2024-12-31 12:43:56 0.0000 0 0 0 0.0000", CurrentMethodName + " did not get the result expected"
+		      
+		      Debug.assert result.Encoding = Encodings.UTF8, CurrentMethodName + " did not get the same encoding"
+		      
+		    End If
 		    
 		    //======================================================
 		    //======================================================
