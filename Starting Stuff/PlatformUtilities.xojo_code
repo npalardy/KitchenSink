@@ -550,28 +550,33 @@ Protected Module PlatformUtilities
 	#tag Method, Flags = &h1
 		Protected Sub LaunchAppWithArguments(app as string, args() as String)
 		  #If TargetMacOS
-		    Dim w As New NSWorkspaceMBS
+		    // if you DO NOT HHAVE or USE MBS then set useMBS to FALSE !
+		    Const useMBS = false
 		    
-		    Dim file As FolderItem = GetFolderItem(app, FolderItem.PathTypeNative)
-		    
-		    Dim error As NSErrorMBS
-		    Dim configuration As New Dictionary
-		    Dim options As Integer
-		    
-		    configuration.Value(w.NSWorkspaceLaunchConfigurationArguments) = args
-		    
-		    // and hide all others
-		    // options = w.NSWorkspaceLaunchAndHideOthers
-		    options = w.NSWorkspaceLaunchAsync
-		    
-		    Dim r As NSRunningApplicationMBS = w.launchApplicationAtFile(file, options, configuration, error)
-		    
-		    If r = Nil Then
-		      Break
-		      MsgBox "Error: " + error.LocalizedDescription
-		    Else
-		      // MsgBox "Started: "+r.localizedName
-		    End If
+		    #If useMBS = True
+		      Dim w As New NSWorkspaceMBS
+		      
+		      Dim file As FolderItem = GetFolderItem(app, FolderItem.PathTypeNative)
+		      
+		      Dim error As NSErrorMBS
+		      Dim configuration As New Dictionary
+		      Dim options As Integer
+		      
+		      configuration.Value(w.NSWorkspaceLaunchConfigurationArguments) = args
+		      
+		      // and hide all others
+		      // options = w.NSWorkspaceLaunchAndHideOthers
+		      options = w.NSWorkspaceLaunchAsync
+		      
+		      Dim r As NSRunningApplicationMBS = w.launchApplicationAtFile(file, options, configuration, error)
+		      
+		      If r = Nil Then
+		        Break
+		        MsgBox "Error: " + error.LocalizedDescription
+		      Else
+		        // MsgBox "Started: "+r.localizedName
+		      End If
+		    #EndIf
 		    
 		  #ElseIf TargetWin32
 		    

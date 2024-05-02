@@ -1,5 +1,27 @@
 #tag Module
 Protected Module ArrayExtensions
+	#tag Method, Flags = &h0
+		Sub AddRow(extends arrayToAddTo(, ) as string, paramarray listOfAdditions as string)
+		  
+		  
+		  Dim currentColumns As Integer =  arrayToAddTo.ColumnCount
+		  
+		  If currentColumns <= 0 Then
+		    currentColumns = listOfAdditions.ubound + 1
+		  End If
+		  
+		  Dim currentRows As Integer = arrayToAddTo.RowCount
+		  
+		  Redim arrayToAddTo(currentRows , currentColumns-1)
+		  
+		  For col As Integer = 0 To Min(currentColumns, listOfAdditions.ubound)
+		    arrayToAddTo(currentRows, col) = listOfAdditions(col)
+		  Next
+		  
+		  
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h0, Description = 417070656E64732065616368206974656D20696E20746865206E65774974656D7320617272617920746F20746865206F726967696E616C
 		Sub Append(extends stringArray() as string, newItems() as String)
 		  For Each item As String In newItems
@@ -30,6 +52,35 @@ Protected Module ArrayExtensions
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function Clone(extends stringArray() as string) As string()
+		  
+		  Dim tmp() As String
+		  
+		  For i As Integer = 0 To stringArray.Ubound
+		    
+		    tmp.append stringArray(i)
+		    
+		  Next
+		  
+		  return tmp
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ColumnCount(extends twoDStringArray(, ) as string) As Integer
+		  Return Ubound(twoDStringArray, 2) + 1 // for each column ........
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function Contains(extends singleDimStringArray() as string, checkFor as String) As Boolean
+		  
+		  Return singleDimStringArray.IndexOf(checkFor) >= 0
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function Equals(extends baseArray() as string, otherArray() as string) As boolean
 		  // compares two arrays for
 		  //   same # of elements
@@ -46,6 +97,13 @@ Protected Module ArrayExtensions
 		  Next
 		  
 		  return true
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function RowCount(extends twoDStringArray(, ) as string) As Integer
+		  Return Ubound(twoDStringArray, 1) + 1 // for each row ........
+		  
 		End Function
 	#tag EndMethod
 
@@ -189,6 +247,36 @@ Protected Module ArrayExtensions
 		      debug.assert array1.Equals(array2) = True, CurrentMethodName + " failed array equals"
 		    End If
 		    
+		    
+		    If True Then
+		      Dim array1() As String
+		      array1.append "123" , "234", "345", "456" 
+		      Dim array2() As String = array1.Clone
+		      
+		      // array2 should have the same # of elements that are copies of array1
+		      Debug.assert array2.Ubound = array1.Ubound, CurrentMethodName + " got wrong count"
+		      debug.assert (array2 Is array1) <> True, CurrentMethodName + " failed array2 is array1 not a clone !"
+		      debug.assert array1.Equals(array2) = True, CurrentMethodName + " failed array equals"
+		      
+		    End If
+		    
+		    If True Then
+		      Dim array1(-1,-1) As String
+		      array1.AddRow "123" , "234", "345", "456" 
+		      
+		      Debug.assert array1.RowCount = Ubound(array1,1) + 1, CurrentMethodName + " got wrong row count"
+		      Debug.assert array1.ColumnCount = 4, CurrentMethodName + " got wrong coloumn count"
+		      
+		    End If
+		    
+		    If True Then
+		      Dim array1(-1,-1) As String
+		      array1.addrow "123" , "234", "345", "456" 
+		      
+		      Debug.assert array1.RowCount = Ubound(array1,1) + 1 , CurrentMethodName + " got wrong row count"
+		      Debug.assert array1.ColumnCount = 4, CurrentMethodName + " got wrong coloumn count"
+		      
+		    End If
 		    
 		  #EndIf
 		End Sub
