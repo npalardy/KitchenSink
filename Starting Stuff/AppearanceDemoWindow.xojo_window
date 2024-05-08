@@ -418,6 +418,15 @@ End
 
 #tag WindowCode
 	#tag Event
+		Function MouseWheel(X As Integer, Y As Integer, DeltaX as Integer, DeltaY as Integer) As Boolean
+		  
+		  If PlatformUtilities.IsNaturalScrollDirection Then
+		    Break
+		  End If
+		End Function
+	#tag EndEvent
+
+	#tag Event
 		Sub Open()
 		  #If targetMacOS
 		    Dim hiresimage As picture 
@@ -425,6 +434,10 @@ End
 		    
 		    Self.UnifiedTitleAndToolbar
 		  #EndIf
+		  
+		  If PlatformUtilities.IsNaturalScrollDirection Then
+		    Break
+		  End If
 		End Sub
 	#tag EndEvent
 

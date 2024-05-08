@@ -322,6 +322,41 @@ Protected Module PlatformUtilities
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Function IsNaturalScrollDirection() As Boolean
+		  Dim isNatural As Boolean = True
+		  
+		  // note calling this while NOT handling a mouse wheel event MAY give you bogus results
+		  // or it may crash :)
+		  
+		  #If targetmacOS
+		    Try
+		      Declare Function SharedApplication_ Lib "AppKit" Selector "sharedApplication" (class_id As Ptr) As Ptr
+		      Declare Function NSClassFromString Lib "AppKit" (aClassName As CFStringRef) As Ptr
+		      Declare Function getCurrentEvent Lib "AppKit" Selector "currentEvent" (obj_id As Ptr) As Ptr
+		      Declare Function isInverted Lib "AppKit" Selector "isDirectionInvertedFromDevice" (id As Ptr) As Boolean
+		      
+		      Dim nsclass As ptr = NSClassFromString("NSApplication")
+		      Dim nsapp As ptr = SharedApplication_(nsclass)
+		      Dim currentevent As ptr = getCurrentEvent(nsapp)
+		      
+		      isNatural = isInverted(currentevent)
+		      
+		    Catch objx As ObjCException
+		      Break // ONLY call this IN a mousewheel event !
+		    End Try
+		    
+		  #Else
+		    
+		    isNatural = False
+		    
+		  #EndIf
+		  
+		  Return isNatural
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function IsWindows10OrGreater() As boolean
 		  #If TargetWindows
 		    
