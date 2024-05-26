@@ -17,7 +17,7 @@ Inherits Application
 		  Notifications.RunUnitTests
 		  LanguageUtils.RunUnitTests
 		  ArrayExtensions.RunUnitTests
-		  StringExtensions.RunUnitTests
+		  StringUtils.RunUnitTests
 		  NumericExtensions.RunUnitTests
 		  EndOfLineExtensions.RunUnitTests
 		  ObjectExtensions.RunUnitTests

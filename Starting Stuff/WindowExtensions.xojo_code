@@ -256,6 +256,32 @@ Protected Module WindowExtensions
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub ShowModally(extends w as window, parentWindow as window = nil)
+		  // centers the new window over the parent IF one is passed in
+		  // since https://tracker.xojo.com/xojoinc/xojo/-/issues/76322
+		  
+		  If parentWindow <> Nil Then
+		    Dim myBounds As Xojo.Rect = w.Bounds
+		    
+		    Dim parentBounds As Xojo.Rect = parentWindow.Bounds
+		    
+		    // can be negative if this window were going to show is larger than the parent
+		    Dim leftpad As Integer = (parentBounds.width - myBounds.Width) / 2 
+		    Dim toppad As Integer = (parentBounds.height - myBounds.height) / 2
+		    
+		    mybounds.Left = parentBounds.Left + leftpad
+		    mybounds.Top = parentBounds.top + toppad
+		    
+		    w.bounds = myBounds
+		  End If
+		  
+		  // Calling the overridden superclass method.
+		  w.ShowModal // Within(parentWindow)
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub UnifiedTitleAndToolbar(extends w as window)
 		  #If targetMacOS
 		    
