@@ -10,3 +10,5 @@ Save it NAMED as
 as a BINARY PROJECT to the _Project Templates_ directory next to the IDE
 
 The next time you start a DESKTOP project this is the template that will get used to start your new project
+
+Attribution in your apps using the entire starter or bits of it is appreciated
