@@ -108,6 +108,28 @@ Inherits Preferences.BasePrefs
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function ReadDateTime(key As String) As DateTime
+		  #Pragma unused key
+		  
+		  #If TargetWindows
+		    // Get a registry key
+		    
+		    Try
+		      Dim reg As New RegistryItem(kCurrentUserSoftwareKey + Preferences.kAppDesigner + "\" + App.Name , False)
+		      
+		      Dim d As DateTime = reg.Value(key).DateTimeValue
+		      
+		      Return d
+		      
+		    Catch rax As RegistryAccessErrorException
+		      Return nil
+		    End Try
+		    
+		  #EndIf
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function ReadDouble(key As String) As Double
 		  #Pragma unused key
 		  
@@ -266,7 +288,7 @@ Inherits Preferences.BasePrefs
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub WriteDate(key as string, value as date)
+		Sub WriteDate(key as string, value as datetime)
 		  #Pragma unused key
 		  #Pragma unused value
 		  

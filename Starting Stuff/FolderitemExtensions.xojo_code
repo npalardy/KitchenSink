@@ -348,6 +348,44 @@ Protected Module FolderitemExtensions
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function MetadataForImageFile(extends imageFolderItem as folderitem) As string
+		  // Declares for "Foundation"
+		  Declare Function NSClassFromString Lib "Foundation" (className As CFStringRef) As ptr
+		  Declare Function FileURLWithPath Lib "Foundation" Selector "fileURLWithPath:" (obj As ptr, path As CFStringRef ) As ptr
+		  Declare Function Description Lib "Foundation" Selector "description" (dict As ptr) As CFStringRef
+		  
+		  // Declares for "ImageIO"
+		  Declare Function CGImageSourceCreateWithURL Lib "ImageIO" (path As ptr, options As ptr) As ptr
+		  Declare Function CGImageSourceCopyPropertiesAtIndex Lib "ImageIO" (imageSource As ptr, index As Integer, options As ptr) As ptr
+		  
+		  Var desc As String
+		  
+		  If imageFolderItem <> Nil Then
+		    
+		    // reference to the NSUrl class
+		    Var nsurl As ptr = NSClassFromString("NSURL")
+		    
+		    // get a reference to the file path Ptr
+		    // from the native path
+		    Var filePath As ptr = FileURLWithPath(nsurl, imageFolderItem.nativePath)
+		    
+		    // a reference to the image
+		    // from our URL
+		    Var imageRef As ptr = CGImageSourceCreateWithURL(filePath,Nil)
+		    
+		    // now get the dictionary of meta data
+		    Var dict As ptr = CGImageSourceCopyPropertiesAtIndex(imageRef,0,Nil)
+		    
+		    // And the contents of the dictionary as  astring
+		    desc = Description(dict)
+		    
+		  End If
+		  
+		  Return desc
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function NameWithoutExtension(extends f as folderitem) As string
 		  If f Is Nil Then 
 		    Return ""
@@ -407,7 +445,7 @@ Protected Module FolderitemExtensions
 		      Dim p As picture 
 		      p = f.IconforFile(s)
 		      
-		      #Pragma warning "Norm finish !"
+		      #Pragma TODO "Norm finish !"
 		      
 		    #EndIf
 		    
@@ -443,6 +481,73 @@ Protected Module FolderitemExtensions
 		  #EndIf
 		End Function
 	#tag EndMethod
+
+
+	#tag Note, Name = SS Bookmarks
+		
+		Public Function GetBookmarkData(f as FolderItem, relativeTo as FolderItem = nil, Mode as Integer = 0) As String
+		  #Pragma Unused mode
+		  //# Mimicks (better) FolderItem.GetSaveInfo with modern system calls. Mode is actually not used. The bookmark will be relative if and only if you set a RelativeTo FolderItem.
+		  
+		  declare function NSClassFromString Lib CocoaLib (aClassName as CFStringRef) As Ptr
+		  declare function URLWithString lib CocoaLib selector "URLWithString:" (cls as Ptr, URLString as CFStringRef) as Ptr
+		  declare function BookmarkDataWithOptions lib CocoaLib selector "bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:" (id as Ptr, options as Integer, rsrc as Ptr, relativeTo as Ptr, byref error as Ptr) as Ptr
+		  declare function DataLength lib CocoaLib selector "length" (id as Ptr) as integer
+		  declare sub DataBytes lib CocoaLib selector "getBytes:length:" (id as Ptr, dest as Ptr, length as integer)
+		  
+		  const CocoaLib = "Cocoa.framework"
+		  
+		  dim url as Ptr = URLWithString(NSClassFromString("NSURL"), f.URLPath)
+		  dim relativeNSURL as Ptr
+		  dim err as Ptr
+		  
+		  if relativeTo <> nil then
+		    relativeNSURL = URLWithString(NSClassFromString("NSURL"), relativeTo.URLPath)
+		  end if
+		  
+		  dim data as Ptr = BookmarkDataWithOptions(url, 0, nil, relativeNSURL, err)
+		  
+		  if data <> nil then
+		    dim L as integer = DataLength(data)
+		    dim mb as new MemoryBlock(L)
+		    DataBytes data, mb, L
+		    return EncodeBase64(mb.StringValue(0, L))
+		  end if
+		    
+		End Function
+		
+		
+		Public Function ResolveBookmark(data as String, relativeTo as FolderItem = nil) As Folderitem
+		  //# Resolves a bookmark and returns the corresponding FolderItem. If you created a relative Bookmark, you MUST provide the same RelativeTo parameter as during creation.
+		  
+		  data = DecodeBase64(data)
+		  
+		  declare function NSClassFromString Lib CocoaLib (aClassName as CFStringRef) As Ptr
+		  declare function URLWithString lib CocoaLib selector "URLWithString:" (cls as Ptr, URLString as CFStringRef) as Ptr
+		  declare function URLByResolvingBookmarkData lib CocoaLib selector "URLByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:" (cls as Ptr, data as Ptr, options as integer, relativeto as Ptr, byref stale as Boolean, byref err as Ptr) as Ptr
+		  declare function DataWithBytes lib CocoaLib selector "dataWithBytes:length:" (cls as Ptr, bytes as Ptr, length as integer) as Ptr
+		  declare function absoluteString lib CocoaLib selector "absoluteString" (id as Ptr) as CFStringRef
+		  
+		  dim url as Ptr
+		  dim relativeNSURL as Ptr
+		  dim stale as boolean
+		  dim err as Ptr
+		  
+		  if relativeTo<>nil then
+		    relativeNSURL = URLWithString(NSClassFromString("NSURL"), relativeTo.URLPath)
+		  end if
+		  
+		  dim mb as MemoryBlock = data
+		  dim nsdata as Ptr = DataWithBytes(NSClassFromString("NSData"), mb, mb.size)
+		  
+		  url = URLByResolvingBookmarkData(NSClassFromString("NSURL"), nsdata, 0, relativeNSURL, stale, err)
+		  
+		  if url <> nil then
+		    return new FolderItem(absoluteString(url), FolderItem.PathModes.URL)
+		  end if
+		  
+		End Function
+	#tag EndNote
 
 
 	#tag Structure, Name = NSOrigin, Flags = &h0

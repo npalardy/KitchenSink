@@ -94,7 +94,7 @@ Protected Module DateExtensions
 
 	#tag Method, Flags = &h0
 		Function ISO8601DateTimeStr(extends d as Date) As string
-		  // formats a date as YYYY-MM-DD HH:MM:SS [+/-]hh:mm
+		  // formats a date as yyyy-MM-DD HH:MM:SS [+/-]hh:mm
 		  // hh is HOURS offset from GMT
 		  // mm is minutes offset from GMT
 		  

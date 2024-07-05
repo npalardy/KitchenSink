@@ -52,29 +52,20 @@ Inherits Application
 		  
 		  MacOS.SetDockLabel("Fooey !")
 		  
-		  // Dim tos As ProperTextOutputStream = ProperTextOutputStream.Create( SpecialFolder.Desktop.child("foobar 123") )
-		  // 
-		  // Break
-		  // 
-		  // tos.WriteLine "123"
-		  // 
-		  // Break
-		  // 
-		  // tos = Nil
-		  // 
-		  // tos = ProperTextOutputStream.Create( SpecialFolder.Desktop.child("foobar 123") )
-		  // 
-		  // Break
-		  // 
-		  // tos.WriteLine "abc123456789"
-		  // 
-		  // Break
-		  // 
-		  // tos = Nil
-		  // 
-		  
 		End Sub
 	#tag EndEvent
+
+
+	#tag Method, Flags = &h0
+		Sub Constructor()
+		  // note IF youre going to do this you need to do it VERY VERY EARLY 
+		  // the open event may not be soon enough
+		  
+		  MacOS.DisableDictationMenu
+		  MacOS.DisableCharacterPalette
+		  
+		End Sub
+	#tag EndMethod
 
 
 	#tag Constant, Name = kEditClear, Type = String, Dynamic = False, Default = \"&Delete", Scope = Public

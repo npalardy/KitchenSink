@@ -180,6 +180,25 @@ Inherits Preferences.BasePrefs
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function ReadDateTime(key As String) As DateTime
+		  #Pragma unused key
+		  
+		  #If TargetLinux
+		    Dim d As datetime
+		    
+		    Dim v As Variant = mPrefsDict.Lookup( key, Nil )
+		    
+		    If (v Is Nil) = False Then
+		      d = DateTime.FromString(v.StringValue)
+		    End If
+		    
+		    Return d
+		    
+		  #endif
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function ReadDouble(key As String) As Double
 		  #Pragma unused key
 		  
@@ -375,6 +394,22 @@ Inherits Preferences.BasePrefs
 		  #If TargetLinux
 		    
 		    mPrefsDict.value( key ) = value.TotalSeconds
+		    
+		    Synchronize
+		    
+		  #EndIf
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteDateTime(key as string, value as dateTime)
+		  
+		  #Pragma unused key
+		  #Pragma unused value
+		  
+		  #If TargetLinux
+		    
+		    mPrefsDict.value( key ) = value.SQLDateTime
 		    
 		    Synchronize
 		    

@@ -74,6 +74,40 @@ Protected Module MacOS
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Sub DisableCharacterPalette()
+		  
+		  
+		  #If TargetMacOS
+		    Declare Function NSClassFromString Lib "Cocoa" (ClsName As CFStringRef) As Ptr
+		    Declare Function standard Lib "Cocoa" Selector "standardUserDefaults" (id As Ptr) As Ptr
+		    Declare Sub setBool Lib "Cocoa" Selector "setBool:forKey:" (id As Ptr, b As Boolean, k As CFStringRef)
+		    
+		    Var userDefaults As Ptr = NSClassFromString("NSUserDefaults")
+		    Var standardUserDefaults As Ptr = standard(userDefaults)
+		    setBool(standardUserDefaults, True, "NSDisabledCharacterPaletteMenuItem")
+		  #EndIf
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
+		Protected Sub DisableDictationMenu()
+		  
+		  
+		  #If TargetMacOS
+		    Declare Function NSClassFromString Lib "Cocoa" (ClsName As CFStringRef) As Ptr
+		    Declare Function standard Lib "Cocoa" Selector "standardUserDefaults" (id As Ptr) As Ptr
+		    Declare Sub setBool Lib "Cocoa" Selector "setBool:forKey:" (id As Ptr, b As Boolean, k As CFStringRef)
+		    
+		    Var userDefaults As Ptr = NSClassFromString("NSUserDefaults")
+		    Var standardUserDefaults As Ptr = standard(userDefaults)
+		    setBool(standardUserDefaults, True, "NSDisabledDictationMenuItem")
+		  #EndIf
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function FindFilesByBundleID(psBundleID As String) As FolderItem()
 		  Dim oResults() As FolderItem
 		  

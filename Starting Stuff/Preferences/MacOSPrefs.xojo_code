@@ -80,7 +80,7 @@ Inherits Preferences.BasePrefs
 		    Static systemTimeZonePtr As Ptr = systemTimeZone(timeZoneClassPtr)
 		    
 		    Dim dataFormatterPtr As Ptr = init(alloc(dateFormatterClassPtr)) 
-		    setDateFormat(dataFormatterPtr, "YYYY-MM-dd HH:mm:ss") 
+		    setDateFormat(dataFormatterPtr, "yyyy-MM-dd HH:mm:ss") 
 		    setTimeZone(dataFormatterPtr, systemTimeZonePtr)
 		    
 		    Dim datePtr As Ptr = objectForKey(standardUserDefaultsPtr, key)
@@ -88,6 +88,41 @@ Inherits Preferences.BasePrefs
 		    
 		    Dim d As New Date()
 		    d.SQLDateTime = dateString
+		    
+		    Return d
+		    
+		  #EndIf
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ReadDateTime(key As String) As DateTime
+		  
+		  // Calling the overridden superclass method.
+		  #If TargetMacOS
+		    Declare Function NSClassFromString Lib FoundationLib (aClassName As CFStringRef) As Ptr
+		    Declare Function alloc Lib FoundationLib Selector "alloc" (NSClass As Ptr) As Ptr
+		    Declare Function init Lib FoundationLib Selector "init" (NSClass As Ptr) As Ptr
+		    Declare Function objectForKey Lib FoundationLib Selector "objectForKey:" (NSUserDefaults As Ptr, key As CFStringRef) As Ptr
+		    Declare Function standardUserDefaults Lib FoundationLib Selector "standardUserDefaults" (NSUserDefaultsClass As Ptr) As Ptr
+		    Declare Function stringFromDate Lib FoundationLib Selector "stringFromDate:" (NSDateFormatter As Ptr, NSDate As Ptr) As CFStringRef 
+		    Declare Function systemTimeZone Lib FoundationLib Selector "systemTimeZone" (NSTimeZone As Ptr) As Ptr
+		    Declare Sub setDateFormat Lib FoundationLib Selector "setDateFormat:" (NSDateFormatter As Ptr, Format As CFStringRef)
+		    Declare Sub setTimeZone Lib FoundationLib Selector "setTimeZone:" (NSDateFormatter As Ptr, NSTimeZone As Ptr)
+		    
+		    Static standardUserDefaultsPtr As Ptr = standardUserDefaults(NSClassFromString("NSUserDefaults")) 
+		    Static dateFormatterClassPtr As Ptr = NSClassFromString("NSDateFormatter")
+		    Static timeZoneClassPtr As Ptr = NSClassFromString("NSTimeZone")
+		    Static systemTimeZonePtr As Ptr = systemTimeZone(timeZoneClassPtr)
+		    
+		    Dim dataFormatterPtr As Ptr = init(alloc(dateFormatterClassPtr)) 
+		    setDateFormat(dataFormatterPtr, "yyyy-MM-dd HH:mm:ss") 
+		    setTimeZone(dataFormatterPtr, systemTimeZonePtr)
+		    
+		    Dim datePtr As Ptr = objectForKey(standardUserDefaultsPtr, key)
+		    Dim dateString As String = stringFromDate(dataFormatterPtr, datePtr)
+		    
+		    Dim d As DateTime = DateTime.FromString(dateString)
 		    
 		    Return d
 		    
@@ -228,6 +263,7 @@ Inherits Preferences.BasePrefs
 
 	#tag Method, Flags = &h0
 		Sub WriteDate(key as string, value as date)
+		  
 		  #If TargetMacOS
 		    Declare Function NSClassFromString Lib FoundationLib (aClassName As CFStringRef) As Ptr
 		    Declare Function alloc Lib FoundationLib Selector "alloc" (NSClass As Ptr) As Ptr
@@ -246,6 +282,40 @@ Inherits Preferences.BasePrefs
 		    
 		    Dim dataFormatterPtr As Ptr = init(alloc(dateFormatterClassPtr))
 		    setDateFormat(dataFormatterPtr, "YYYY-MM-dd HH:mm:ss") 
+		    setTimeZone(dataFormatterPtr, systemTimeZonePtr)
+		    
+		    Dim datePtr As Ptr = dateFromString(dataFormatterPtr, value.SQLDateTime)
+		    setObject(standardUserDefaultsPtr, datePtr, key)
+		    
+		    Synchronize
+		    
+		  #EndIf
+		  
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteDateTime(key as string, value as dateTime)
+		  
+		  #If TargetMacOS
+		    Declare Function NSClassFromString Lib FoundationLib (aClassName As CFStringRef) As Ptr
+		    Declare Function alloc Lib FoundationLib Selector "alloc" (NSClass As Ptr) As Ptr
+		    Declare Function dateFromString Lib FoundationLib Selector "dateFromString:" (NSDateFormatter As Ptr, aString As CFStringRef) As Ptr
+		    Declare Function init Lib FoundationLib Selector "init" (NSClass As Ptr) As Ptr
+		    Declare Function standardUserDefaults Lib FoundationLib Selector "standardUserDefaults" (NSUserDefaultsClass As Ptr) As Ptr
+		    Declare Function systemTimeZone Lib FoundationLib Selector "systemTimeZone" (NSTimeZone As Ptr) As Ptr
+		    Declare Sub setDateFormat Lib FoundationLib Selector "setDateFormat:" (NSDateFormatter As Ptr, Format As CFStringRef)
+		    Declare Sub setObject Lib FoundationLib Selector "setObject:forKey:" (NSUserDefaults As Ptr, NSDate As Ptr, key As CFStringRef)
+		    Declare Sub setTimeZone Lib FoundationLib Selector "setTimeZone:" (NSDateFormatter As Ptr, NSTimeZone As Ptr)
+		    
+		    Static standardUserDefaultsPtr As Ptr = standardUserDefaults(NSClassFromString("NSUserDefaults"))
+		    Static dateFormatterClassPtr As Ptr = NSClassFromString("NSDateFormatter")
+		    Static timeZoneClassPtr As Ptr = NSClassFromString("NSTimeZone")
+		    Static systemTimeZonePtr As Ptr = systemTimeZone(timeZoneClassPtr)
+		    
+		    Dim dataFormatterPtr As Ptr = init(alloc(dateFormatterClassPtr))
+		    setDateFormat(dataFormatterPtr, "yyyy-MM-dd HH:mm:ss") 
 		    setTimeZone(dataFormatterPtr, systemTimeZonePtr)
 		    
 		    Dim datePtr As Ptr = dateFromString(dataFormatterPtr, value.SQLDateTime)

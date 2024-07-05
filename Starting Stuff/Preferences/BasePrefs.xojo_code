@@ -31,6 +31,16 @@ Private Class BasePrefs
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function ReadDateTime(key As String) As DateTime
+		  #Pragma unused key
+		  
+		  #Pragma TODO "Norm finish !"
+		  
+		  Break
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function ReadDouble(key As String) As Double
 		  #pragma unused key
 		End Function
@@ -78,6 +88,19 @@ Private Class BasePrefs
 		Sub WriteDate(key as string, value as date)
 		  #Pragma unused key
 		  #pragma unused value
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteDateTime(key as string, value as dateTime)
+		  #Pragma unused key
+		  #Pragma unused value
+		  
+		  #Pragma unused key
+		  
+		  #Pragma TODO "Norm finish !"
+		  
+		  Break
 		End Sub
 	#tag EndMethod
 
