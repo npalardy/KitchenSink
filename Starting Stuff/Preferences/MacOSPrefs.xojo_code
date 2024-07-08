@@ -281,7 +281,7 @@ Inherits Preferences.BasePrefs
 		    Static systemTimeZonePtr As Ptr = systemTimeZone(timeZoneClassPtr)
 		    
 		    Dim dataFormatterPtr As Ptr = init(alloc(dateFormatterClassPtr))
-		    setDateFormat(dataFormatterPtr, "YYYY-MM-dd HH:mm:ss") 
+		    setDateFormat(dataFormatterPtr, "yyyy-MM-dd HH:mm:ss") 
 		    setTimeZone(dataFormatterPtr, systemTimeZonePtr)
 		    
 		    Dim datePtr As Ptr = dateFromString(dataFormatterPtr, value.SQLDateTime)
