@@ -302,6 +302,9 @@ Protected Module Preferences
 		  If m_PrefsImplementation.HasKey(key) Then
 		    Return m_PrefsImplementation.ReadStringArray(key)
 		  End If
+		  
+		  Dim empty() As astring
+		  Return empty
 		End Function
 	#tag EndMethod
 
