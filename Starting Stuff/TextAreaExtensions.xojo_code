@@ -108,6 +108,63 @@ Protected Module TextAreaExtensions
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Sub SetMargin(Extends t As TextArea, hMargin As Integer, vMargin As Integer = 0)
+		  
+		  // hMargin: horizontal margin, left and right side
+		  // vMargin: vertical margin, top and bottom
+		  
+		  #If TargetMacOS
+		    
+		    Var margin As TextAreaExtensions.NSSize
+		    margin.width = hMargin
+		    margin.height = vMargin
+		    
+		    Declare Function documentView Lib "Cocoa" Selector "documentView" (obj_id As Integer) As Ptr
+		    Var ref As Ptr = documentView(Integer(t.Handle))
+		    
+		    Declare Sub setTextContainerInset Lib "Cocoa" Selector "setTextContainerInset:" (obj_id As Ptr, value As NSSize)
+		    setTextContainerInset(ref, margin)
+		    
+		    
+		  #ElseIf TargetWindows
+		    
+		    Const EC_LEFTMARGIN = 1
+		    Const EC_RIGHTMARGIN = 2
+		    Const EM_SETMARGINS = &hD3
+		    Var lMargin As Integer = hMargin
+		    Var rMargin As Integer = 2^16 * hMargin
+		    #Pragma Unused vMargin
+		    
+		    Declare Sub SendMessage Lib "user32" Alias "SendMessageW" (hwnd As ptr, msg As Integer, wparam As Integer, lparam As Integer)
+		    SendMessage(t.Handle, EM_SETMARGINS, EC_LEFTMARGIN + EC_RIGHTMARGIN, lMargin + rMargin)
+		    
+		    
+		  #ElseIf TargetLinux
+		    
+		    Declare Sub gtk_text_view_set_left_margin Lib "gtk-3.so" (ref As ptr, margin As Integer)
+		    gtk_text_view_set_left_margin(t.Handle, hmargin)
+		    
+		    Declare Sub gtk_text_view_set_right_margin Lib "gtk-3.so" (ref As ptr, margin As Integer)
+		    gtk_text_view_set_right_margin(t.Handle, hmargin)
+		    
+		    Declare Sub gtk_text_view_set_top_margin Lib "gtk-3.so" (ref As ptr, margin As Integer)
+		    gtk_text_view_set_top_margin(t.Handle, vmargin)
+		    
+		    Declare Sub gtk_text_view_set_bottom_margin Lib "gtk-3.so" (ref As ptr, margin As Integer)
+		    gtk_text_view_set_bottom_margin(t.Handle, vmargin)
+		    
+		  #EndIf
+		  
+		End Sub
+	#tag EndMethod
+
+
+	#tag Structure, Name = NSSize, Flags = &h1
+		width As Double
+		height As Double
+	#tag EndStructure
+
 
 	#tag Enum, Name = ScrollerStyles, Type = Integer, Flags = &h0
 		Legacy

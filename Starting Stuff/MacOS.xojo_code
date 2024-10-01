@@ -158,6 +158,42 @@ Protected Module MacOS
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Function GetLocations(location as NSSearchPathDirectory, mask as NSSearchPathDomainMask) As folderitem()
+		  #If TargetMacOS Or TargetIOS
+		    Declare Function NSClassFromString Lib "Foundation" (name As cfstringref) As ptr
+		    
+		    // @property(class, readonly, strong) NSFileManager *defaultManager;
+		    Declare Function getDefaultManager Lib "Foundation" Selector "defaultManager" (cls As ptr) As Ptr
+		    
+		    Var manager As ptr = getDefaultManager(NSClassFromString("NSFileManager"))
+		    
+		    // - (NSArray<NSURL *> *)URLsForDirectory:(NSSearchPathDirectory)directory inDomains:(NSSearchPathDomainMask)domainMask;
+		    Declare Function URLsForDirectory_inDomains Lib "Foundation" Selector "URLsForDirectory:inDomains:" ( obj As ptr , directory As Integer , domainMask As Integer ) As Ptr
+		    
+		    Dim urls As ptr = URLsForDirectory_inDomains(manager, CType(location, Integer), CType(mask, Integer))
+		    
+		    Declare Function count Lib "Foundation" Selector "count" (obj As ptr) As Integer
+		    Declare Function objectAtIndex Lib "Foundation" Selector "objectAtIndex:" (obj As ptr, index As Integer) As ptr
+		    // @property(nullable, readonly, copy) NSString *absoluteString;
+		    Declare Function getAbsoluteString Lib "Foundation" Selector "absoluteString" (obj As ptr) As CFStringRef
+		    Dim c As Integer = count(urls)
+		    
+		    Dim locs() As FolderItem
+		    
+		    For i As Integer = 0 To c-1
+		      Dim url As ptr = objectAtIndex(urls, i)
+		      
+		      Dim s As String = getAbsoluteString(url)
+		      
+		      locs.add New FolderItem(s, FolderItem.PathModes.URL)
+		    Next
+		    
+		    Return locs
+		  #EndIf
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function IsProcessTranslated() As integer
 		  // The example function returns the value 0 for a native process, 1 for a translated process, and -1 when an error occurs.
 		  
@@ -394,6 +430,45 @@ Protected Module MacOS
 		// any methods in here need to often be wrapped in #IF TargetMacOS UNLESS they are portable
 		
 	#tag EndNote
+
+
+	#tag Enum, Name = NSSearchPathDirectory, Flags = &h0
+		applicationDirectory = 1
+		  demoApplicationDirectory = 2
+		  developerApplicationDirectory = 3
+		  adminApplicationDirectory = 4
+		  libraryDirectory = 5
+		  developerDirectory = 6
+		  userDirectory
+		  documentationDirectory
+		  documentDirectory
+		  coreServiceDirectory
+		  autosavedInformationDirectory
+		  desktopDirectory
+		  cachesDirectory
+		  applicationSupportDirectory
+		  downloadsDirectory
+		  inputMethodsDirectory
+		  moviesDirectory
+		  musicDirectory
+		  picturesDirectory
+		  printerDescriptionsDirectory
+		  sharedPublicDirectory
+		  preferencePanesDirectory
+		  applicationScriptsDirectory
+		  itemReplacementDirectory = 99
+		  allApplicationsDirectory
+		  allLibrariesDirectory
+		trashDirectory
+	#tag EndEnum
+
+	#tag Enum, Name = NSSearchPathDomainMask, Flags = &h0, Binary = True
+		User
+		  Local
+		  Network
+		  System
+		All = 15
+	#tag EndEnum
 
 
 	#tag ViewBehavior
