@@ -303,7 +303,7 @@ Protected Module Preferences
 		    Return m_PrefsImplementation.ReadStringArray(key)
 		  End If
 		  
-		  Dim empty() As astring
+		  Dim empty() As string
 		  Return empty
 		End Function
 	#tag EndMethod

@@ -349,37 +349,40 @@ Protected Module FolderitemExtensions
 
 	#tag Method, Flags = &h0
 		Function MetadataForImageFile(extends imageFolderItem as folderitem) As string
-		  // Declares for "Foundation"
-		  Declare Function NSClassFromString Lib "Foundation" (className As CFStringRef) As ptr
-		  Declare Function FileURLWithPath Lib "Foundation" Selector "fileURLWithPath:" (obj As ptr, path As CFStringRef ) As ptr
-		  Declare Function Description Lib "Foundation" Selector "description" (dict As ptr) As CFStringRef
-		  
-		  // Declares for "ImageIO"
-		  Declare Function CGImageSourceCreateWithURL Lib "ImageIO" (path As ptr, options As ptr) As ptr
-		  Declare Function CGImageSourceCopyPropertiesAtIndex Lib "ImageIO" (imageSource As ptr, index As Integer, options As ptr) As ptr
-		  
 		  Var desc As String
 		  
-		  If imageFolderItem <> Nil Then
+		  #If targetmacOS
+		    // Declares for "Foundation"
+		    Declare Function NSClassFromString Lib "Foundation" (className As CFStringRef) As ptr
+		    Declare Function FileURLWithPath Lib "Foundation" Selector "fileURLWithPath:" (obj As ptr, path As CFStringRef ) As ptr
+		    Declare Function Description Lib "Foundation" Selector "description" (dict As ptr) As CFStringRef
 		    
-		    // reference to the NSUrl class
-		    Var nsurl As ptr = NSClassFromString("NSURL")
+		    // Declares for "ImageIO"
+		    Declare Function CGImageSourceCreateWithURL Lib "ImageIO" (path As ptr, options As ptr) As ptr
+		    Declare Function CGImageSourceCopyPropertiesAtIndex Lib "ImageIO" (imageSource As ptr, index As Integer, options As ptr) As ptr
 		    
-		    // get a reference to the file path Ptr
-		    // from the native path
-		    Var filePath As ptr = FileURLWithPath(nsurl, imageFolderItem.nativePath)
 		    
-		    // a reference to the image
-		    // from our URL
-		    Var imageRef As ptr = CGImageSourceCreateWithURL(filePath,Nil)
-		    
-		    // now get the dictionary of meta data
-		    Var dict As ptr = CGImageSourceCopyPropertiesAtIndex(imageRef,0,Nil)
-		    
-		    // And the contents of the dictionary as  astring
-		    desc = Description(dict)
-		    
-		  End If
+		    If imageFolderItem <> Nil Then
+		      
+		      // reference to the NSUrl class
+		      Var nsurl As ptr = NSClassFromString("NSURL")
+		      
+		      // get a reference to the file path Ptr
+		      // from the native path
+		      Var filePath As ptr = FileURLWithPath(nsurl, imageFolderItem.nativePath)
+		      
+		      // a reference to the image
+		      // from our URL
+		      Var imageRef As ptr = CGImageSourceCreateWithURL(filePath,Nil)
+		      
+		      // now get the dictionary of meta data
+		      Var dict As ptr = CGImageSourceCopyPropertiesAtIndex(imageRef,0,Nil)
+		      
+		      // And the contents of the dictionary as  astring
+		      desc = Description(dict)
+		      
+		    End If
+		  #EndIf
 		  
 		  Return desc
 		End Function

@@ -136,7 +136,7 @@ Protected Module TextAreaExtensions
 		    Var rMargin As Integer = 2^16 * hMargin
 		    #Pragma Unused vMargin
 		    
-		    Declare Sub SendMessage Lib "user32" Alias "SendMessageW" (hwnd As ptr, msg As Integer, wparam As Integer, lparam As Integer)
+		    Declare Sub SendMessage Lib "user32" Alias "SendMessageW" (hwnd As Integer, msg As Integer, wparam As Integer, lparam As Integer)
 		    SendMessage(t.Handle, EM_SETMARGINS, EC_LEFTMARGIN + EC_RIGHTMARGIN, lMargin + rMargin)
 		    
 		    

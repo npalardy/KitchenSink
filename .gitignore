@@ -1,2 +1,13 @@
 
 /My Application.debug.app
+Builds - Std Desktop/Windows/My Application/My Application.exe
+Builds - Std Desktop/Windows/My Application/My Application Libs/XojoGUIFramework32.dll
+Builds - Std Desktop/Windows/My Application/My Application Libs/vcruntime140.dll
+Builds - Std Desktop/Windows/My Application/My Application Libs/vccorlib140.dll
+Builds - Std Desktop/Windows/My Application/My Application Libs/msvcp140.dll
+Builds - Std Desktop/Windows/My Application/My Application Libs/Internet Encodings.dll
+Builds - Std Desktop/Windows/My Application/My Application Libs/icuuc65.dll
+Builds - Std Desktop/Windows/My Application/My Application Libs/icuin65.dll
+Builds - Std Desktop/Windows/My Application/My Application Libs/icudt65.dll
+Builds - Std Desktop/Windows/My Application/My Application Libs/GZip.dll
+Builds - Std Desktop/Windows/My Application/My Application Libs/Crypto.dll
