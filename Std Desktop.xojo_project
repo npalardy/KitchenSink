@@ -68,6 +68,7 @@ Module=OSNotifications;Starting Stuff/OSNotifications.xojo_code;&h0000000046F52F
 Module=DateTimeExtensions;Starting Stuff/DateTimeExtensions.xojo_code;&h0000000063DD9FFF;&h000000007196DFFF;false
 Class=token;Starting Stuff/LanguageUtils/token.xojo_code;&h0000000072626FFF;&hFFFFFFFFBC4AE677;false
 Module=AppleScript;Starting Stuff/AppleScript.xojo_code;&h00000000145407FF;&h000000007196DFFF;false
+Window=OKCancelButtons;Starting Stuff/OKCancelButtons.xojo_window;&h000000006E1977FF;&h000000007196DFFF;false
 DefaultWindow=AppearanceDemoWindow
 AppMenuBar=MainMenuBar
 MajorVersion=1

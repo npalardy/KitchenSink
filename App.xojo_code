@@ -56,6 +56,16 @@ Inherits Application
 	#tag EndEvent
 
 
+	#tag MenuHandler
+		Function HelpAbout() As Boolean Handles HelpAbout.Action
+		  macOS.DefaultAboutBox
+		  
+		  Return True
+		  
+		End Function
+	#tag EndMenuHandler
+
+
 	#tag Method, Flags = &h0
 		Sub Constructor()
 		  // note IF youre going to do this you need to do it VERY VERY EARLY 

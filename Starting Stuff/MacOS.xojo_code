@@ -74,6 +74,27 @@ Protected Module MacOS
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Sub DefaultAboutBox()
+		  // add a Credits.rtf Or Credits.html to your Resources folder and it displays within the Window.
+		  // note this name IS case sensitive !
+		  
+		  #If TargetMacOS Then
+		    
+		    Declare Function NSClassFromString Lib "Cocoa" (aClassName As CFStringRef) As Ptr
+		    Declare Function SharedApplication Lib "Cocoa" Selector "sharedApplication" (receiver As Ptr) As Ptr
+		    
+		    Var sA As Ptr = NSClassFromString("NSApplication")
+		    sA = SharedApplication(sA)
+		    
+		    Declare Sub OrderFrontStandardAboutPanel Lib "Cocoa" Selector "orderFrontStandardAboutPanel:" (receiver As Ptr, ID As Ptr)
+		    
+		    OrderFrontStandardAboutPanel(sA, Nil)
+		    
+		  #EndIf
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Sub DisableCharacterPalette()
 		  
 		  

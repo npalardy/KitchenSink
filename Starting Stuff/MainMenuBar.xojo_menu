@@ -113,5 +113,21 @@ Begin Menu MainMenuBar
       AutoEnable = True
       Visible = True
    End
+   Begin MenuItem HelpMenu
+      SpecialMenu = 0
+      Index = -2147483648
+      Text = "Help"
+      AutoEnabled = True
+      AutoEnable = True
+      Visible = True
+      Begin AppleMenuItem HelpAbout
+         SpecialMenu = 0
+         Index = -2147483648
+         Text = "About"
+         AutoEnabled = True
+         AutoEnable = True
+         Visible = True
+      End
+   End
 End
 #tag EndMenu
