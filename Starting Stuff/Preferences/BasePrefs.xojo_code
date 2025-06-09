@@ -71,6 +71,12 @@ Private Class BasePrefs
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub RemoveBacking()
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub WriteBoolean(key as string, value as Boolean)
 		  #Pragma unused key
 		  #pragma unused value

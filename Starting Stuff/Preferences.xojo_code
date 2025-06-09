@@ -422,7 +422,7 @@ Protected Module Preferences
 		    
 		    If True Then
 		      Dim key As String = "testString"
-		      Dim initial As String = "this is a test of the emergncy ... never mind" 
+		      Dim initial As String = "this is a test of the emergency ... never mind" 
 		      m_PrefsImplementation.WriteString(key, initial )
 		      Dim result As String = m_PrefsImplementation.ReadString(key)
 		      debug.Assert result = initial, CurrentMethodName  + " " + key + " did not match"
@@ -450,11 +450,134 @@ Protected Module Preferences
 		    If True Then
 		      Dim key As String = "FOOBAR"
 		      
-		      debug.Assert  m_PrefsImplementation.HasKey(key) = false, CurrentMethodName + "found " + key + " but should not have"
+		      debug.Assert  m_PrefsImplementation.HasKey(key) = False, CurrentMethodName + "found " + key + " but should not have"
+		      
+		    End If
+		    
+		    
+		    // reinit
+		    If True Then
+		      m_PrefsImplementation = Nil
+		      InitPrefsInstance
+		      
+		      If True Then
+		        // write a bunch of values
+		        Dim key As String = "testBoolean"
+		        Dim initial As Boolean = True
+		        m_PrefsImplementation.WriteBoolean(key, initial)
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testColor"
+		        Dim initial As Color = &c12345678
+		        m_PrefsImplementation.WriteColor(key, initial)
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testDate"
+		        Dim initial As date = New Date(2033, 01, 02, 03, 04, 05, 06)
+		        m_PrefsImplementation.WriteDate(key, initial )
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testDateTime"
+		        Dim initial As DateTime = New DateTime(2033, 01, 02, 03, 04, 05, 06)
+		        m_PrefsImplementation.WriteDateTime(key, initial )
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testDouble"
+		        Dim initial As Double = 12.345
+		        m_PrefsImplementation.WriteDouble(key, initial )
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testInteger"
+		        Dim initial As Integer = 838381
+		        m_PrefsImplementation.WriteInteger(key, initial )
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testString"
+		        Dim initial As String = "this is a test of the emergency ... never mind" 
+		        m_PrefsImplementation.WriteString(key, initial )
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testStringArray"
+		        Dim initial() As String = Array("1", "2", "3") 
+		        m_PrefsImplementation.WriteStringArray(key, initial )
+		      End If
+		      
+		      // reiniti so we have no stored values
+		      m_PrefsImplementation = Nil
+		      InitPrefsInstance
+		      
+		      If True Then
+		        Dim key As String = "testBoolean"
+		        Dim initial As Boolean = True
+		        Dim result As Boolean = m_PrefsImplementation.ReadBoolean(key)
+		        debug.Assert result = initial, CurrentMethodName + " " + key + " did not match"
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testColor"
+		        Dim initial As Color = &c12345678
+		        Dim result As Color = m_PrefsImplementation.ReadColor(key)
+		        debug.Assert result = initial, CurrentMethodName  + " " + key + " did not match"
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testDate"
+		        Dim initial As date = New Date(2033, 01, 02, 03, 04, 05, 06)
+		        Dim result As Date = m_PrefsImplementation.ReadDate(key)
+		        // object comparison so have to compare total seconds or something else
+		        debug.Assert result.TotalSeconds = initial.TotalSeconds, CurrentMethodName  + " " + key + " did not match wrote " + initial.SQLDateTime + " got " + result.SQLDateTime
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testDateTime"
+		        Dim initial As DateTime = New DateTime(2033, 01, 02, 03, 04, 05, 06)
+		        Dim result As DateTime = m_PrefsImplementation.ReadDateTime(key)
+		        // object comparison so have to compare total seconds or something else
+		        debug.Assert result.SecondsFrom1970 = initial.SecondsFrom1970, CurrentMethodName  + " " + key + " did not match wrote " + initial.SQLDateTime + " got " + result.SQLDateTime
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testDouble"
+		        Dim initial As Double = 12.345
+		        Dim result As Double = m_PrefsImplementation.ReadDouble(key)
+		        debug.Assert result = initial, CurrentMethodName  + " " + key + " did not match"
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testInteger"
+		        Dim initial As Integer = 838381
+		        Dim result As Integer = m_PrefsImplementation.ReadInteger(key)
+		        debug.Assert result = initial, CurrentMethodName  + " " + key + " did not match"
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testString"
+		        Dim initial As String = "this is a test of the emergency ... never mind" 
+		        Dim result As String = m_PrefsImplementation.ReadString(key)
+		        debug.Assert result = initial, CurrentMethodName  + " " + key + " did not match"
+		      End If
+		      
+		      If True Then
+		        Dim key As String = "testStringArray"
+		        Dim initial() As String = Array("1", "2", "3") 
+		        Dim result() As String = m_PrefsImplementation.ReadStringArray(key)
+		        // in this case we need to compare ARRAYS
+		        debug.Assert result.Equals(initial), CurrentMethodName  + " " + key + " did not match"
+		      End If
+		      
+		      m_PrefsImplementation.RemoveBacking
 		      
 		    End If
 		    
 		  #EndIf
+		  
 		End Sub
 	#tag EndMethod
 

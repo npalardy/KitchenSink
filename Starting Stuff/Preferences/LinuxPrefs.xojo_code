@@ -42,6 +42,7 @@ Inherits Preferences.BasePrefs
 	#tag Method, Flags = &h1
 		Protected Function ConvertDoubleArray(doubleArray as Variant) As JSONItem
 		  Dim d() As Double 
+		  
 		  d = doubleArray
 		  
 		  Break
@@ -67,12 +68,22 @@ Inherits Preferences.BasePrefs
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Function ConvertJsonToStringArray(jsonArray As JSONItem) As string()
+		  Dim sArray() As String 
+		  
+		  For i As Integer = 0 To jsonArray.Count - 1
+		    sArray.add jsonArray.ValueAt(i).StringValue
+		  Next
+		  
+		  Return sArray
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function ConvertStringArray(stringArray as Variant) As JSONItem
 		  Dim sArray() As String = stringArray
 		  
 		  Dim j As New jsonItem
-		  
-		  Break
 		  
 		  For Each s As String In sArray
 		    j.add s
@@ -86,44 +97,69 @@ Inherits Preferences.BasePrefs
 		Function HasKey(key as String) As Boolean
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    Init
 		    
 		    Return mPrefsDict.HasKey( key )
 		    
-		  #EndIf
+		  #endif
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Sub Init()
 		  #If TargetLinux
-		    Try
-		      If mPrefsDict is nil then
-		        mPrefsDict = New dictionary
-		      End If
+		    
+		    If mInited = False Then
 		      
-		      mPrefsFile = SpecialFolder.UserHome.Child("." + App.Name + ".settings")
+		      Try
+		        If mPrefsDict is nil then
+		          mPrefsDict = New dictionary
+		        End If
+		        
+		        mPrefsFile = SpecialFolder.UserHome.Child("." + App.Name + ".settings")
+		        
+		        If mPrefsFile <> Nil And mPrefsFile.IsFolder = False And mPrefsFile.Exists = True Then
+		          // read in the json we use
+		          // and then we'll keep thing in sync
+		          
+		          Dim Input As TextInputStream = TextInputStream.Open( mPrefsFile )
+		          
+		          Input.Encoding = Encodings.UTF8
+		          
+		          Dim lJson As JSONItem = New JSONItem(Input.ReadAll)
+		          
+		          #Pragma BreakOnExceptions False
+		          
+		          For Each key As String In lJSON.Keys
+		            
+		            Try
+		              Dim item As JSONItem = lJSON.Value(key)
+		              If item.IsArray Then
+		                mPrefsDict.Value(key) = ConvertJsonToStringArray( item )
+		              Else
+		                mPrefsDict.Value(key) = item.Value(key)
+		              End If
+		            Catch
+		              mPrefsDict.Value(key) = lJSON.Value(key)
+		            End Try
+		            
+		          Next
+		          
+		          #Pragma BreakOnExceptions Default
+		          
+		        End If
+		        
+		      Catch noe As NilObjectException
+		        mPrefsFile = Nil
+		        mFileNotFound = True
+		      Catch iox As IOException
+		        mPrefsFile = Nil
+		        mFileNotFound = True
+		      End Try
 		      
-		      If mPrefsFile <> Nil And mPrefsFile.IsFolder = False And mPrefsFile.Exists = True Then
-		        // read in the json we use
-		        // and then we'll keep thing in sync
-		        
-		        Dim Input As TextInputStream = TextInputStream.Open( mPrefsFile )
-		        
-		        Input.Encoding = Encodings.UTF8
-		        
-		        Dim lJson As JSONItem = New JSONItem(Input.ReadAll)
-		        
-		      End If
-		      
-		    Catch noe As NilObjectException
-		      mPrefsFile = Nil
-		      mFileNotFound = True
-		    Catch iox As IOException
-		      mPrefsFile = Nil
-		      mFileNotFound = True
-		    End Try
+		      mInited = True
+		    End If
 		    
 		  #endif
 		End Sub
@@ -133,7 +169,7 @@ Inherits Preferences.BasePrefs
 		Function ReadBoolean(key as String) As Boolean
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    Dim v As Variant = mPrefsDict.Lookup( key, False )
 		    
@@ -147,7 +183,7 @@ Inherits Preferences.BasePrefs
 		Function ReadColor(key As String) As Color
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    // colors dont exist in JSON so they have been converted to int32's
 		    // we need to convert them back
@@ -163,7 +199,7 @@ Inherits Preferences.BasePrefs
 		Function ReadDate(key As String) As Date
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    Dim d As date
 		    
 		    Dim v As Variant = mPrefsDict.Lookup( key, Nil )
@@ -183,7 +219,7 @@ Inherits Preferences.BasePrefs
 		Function ReadDateTime(key As String) As DateTime
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    Dim d As datetime
 		    
 		    Dim v As Variant = mPrefsDict.Lookup( key, Nil )
@@ -202,7 +238,7 @@ Inherits Preferences.BasePrefs
 		Function ReadDouble(key As String) As Double
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    Dim v As Variant = mPrefsDict.Lookup( key, 0 )
 		    
@@ -216,13 +252,13 @@ Inherits Preferences.BasePrefs
 		Function ReadInteger(key As String) As Integer
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    Dim v As Variant = mPrefsDict.Lookup( key, 0 )
 		    
 		    Return v.IntegerValue
 		    
-		  #EndIf
+		  #endif
 		End Function
 	#tag EndMethod
 
@@ -230,7 +266,7 @@ Inherits Preferences.BasePrefs
 		Function ReadString(key As String) As String
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    Dim v As Variant = mPrefsDict.Lookup( key, "" )
 		    
@@ -244,19 +280,20 @@ Inherits Preferences.BasePrefs
 		Function ReadStringArray(key As String) As string()
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    Dim Default() As String
 		    
 		    Dim v As Variant = mPrefsDict.Lookup( key, Nil )
 		    
 		    If v <> Nil Then
+		      
 		      default = v
 		    End If
 		    
 		    Return Default
 		    
-		  #EndIf
+		  #endif
 		End Function
 	#tag EndMethod
 
@@ -264,9 +301,23 @@ Inherits Preferences.BasePrefs
 		Sub Remove(key As String)
 		  #Pragma unused key
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    mPrefsDict.Remove( key )
+		    
+		    Synchronize
+		    
+		  #endif
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub RemoveBacking()
+		  #If TargetLinux
+		    
+		    If mPrefsFile <> Nil And mPrefsFile.Exists Then
+		      mPrefsFile.Remove
+		    End If
 		    
 		  #EndIf
 		End Sub
@@ -274,7 +325,7 @@ Inherits Preferences.BasePrefs
 
 	#tag Method, Flags = &h21
 		Private Sub Synchronize()
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    Dim s As String
 		    Dim j As New JSONItem 
@@ -284,8 +335,6 @@ Inherits Preferences.BasePrefs
 		      Dim value As Variant = mPrefsDict.Value(key)
 		      
 		      If value.IsArray Then
-		        Break
-		        
 		        
 		        Select Case value.ArrayElementType
 		          
@@ -361,13 +410,13 @@ Inherits Preferences.BasePrefs
 		  #Pragma unused key
 		  #Pragma unused value
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    mPrefsDict.value( key ) = value
 		    
 		    Synchronize
 		    
-		  #EndIf
+		  #endif
 		End Sub
 	#tag EndMethod
 
@@ -376,13 +425,13 @@ Inherits Preferences.BasePrefs
 		  #Pragma unused key
 		  #Pragma unused value
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    mPrefsDict.value( key ) = Int32(value)
 		    
 		    Synchronize
 		    
-		  #EndIf
+		  #endif
 		End Sub
 	#tag EndMethod
 
@@ -391,13 +440,13 @@ Inherits Preferences.BasePrefs
 		  #Pragma unused key
 		  #Pragma unused value
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    mPrefsDict.value( key ) = value.TotalSeconds
 		    
 		    Synchronize
 		    
-		  #EndIf
+		  #endif
 		End Sub
 	#tag EndMethod
 
@@ -407,13 +456,13 @@ Inherits Preferences.BasePrefs
 		  #Pragma unused key
 		  #Pragma unused value
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    mPrefsDict.value( key ) = value.SQLDateTime
 		    
 		    Synchronize
 		    
-		  #EndIf
+		  #endif
 		End Sub
 	#tag EndMethod
 
@@ -422,7 +471,7 @@ Inherits Preferences.BasePrefs
 		  #Pragma unused key
 		  #Pragma unused value
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    mPrefsDict.value( key ) = value
 		    
@@ -437,13 +486,13 @@ Inherits Preferences.BasePrefs
 		  #Pragma unused key
 		  #Pragma unused value
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    mPrefsDict.value( key ) = value
 		    
 		    Synchronize
 		    
-		  #EndIf
+		  #endif
 		End Sub
 	#tag EndMethod
 
@@ -452,7 +501,7 @@ Inherits Preferences.BasePrefs
 		  #Pragma unused key
 		  #Pragma unused value
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    mPrefsDict.value( key ) = value
 		    
@@ -467,7 +516,7 @@ Inherits Preferences.BasePrefs
 		  #Pragma unused key
 		  #Pragma unused arr
 		  
-		  #If TargetLinux
+		  #if TargetLinux
 		    
 		    mPrefsDict.value( key ) = arr
 		    
@@ -480,6 +529,10 @@ Inherits Preferences.BasePrefs
 
 	#tag Property, Flags = &h21
 		Private mFileNotFound As Boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mInited As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h21

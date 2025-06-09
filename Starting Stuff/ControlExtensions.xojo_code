@@ -1,5 +1,12 @@
 #tag Module
 Protected Module ControlExtensions
+
+	#tag Method, Flags = &h0
+		Sub Text(extends pb as PushButton, assigns s as string)
+		  pb.Caption = s
+		End Sub
+	#tag EndMethod
+	
 	#tag ViewBehavior
 		#tag ViewProperty
 			Name="Name"
